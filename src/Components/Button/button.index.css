@@ -1,0 +1,13 @@
+.button-container {
+  display: flex;
+  margin-top: 30px;
+  justify-content: flex-end;
+}
+
+.button-container button {
+  border: unset;
+  padding: 10px 20px;
+  border-radius: 100px;
+  background-color: var(--dark-blue);
+  color: var(--light-gray);
+}

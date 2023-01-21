@@ -1,0 +1,33 @@
+.bsc-input * {
+  display: block;
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+.bsc-input label {
+  margin-bottom: 6px;
+  font-size: 10pt;
+}
+
+.bsc-input input {
+  border: 1px solid var(--gray);
+  padding: 10px 15px;
+  width: 90%;
+}
+
+.input-container {
+  display: flex;
+}
+
+.input-icon {
+  background-color: var(--light-gray);
+  width: 10%;
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--gray);
+  color: var(--dark-blue);
+}
+
+.input-icon svg {
+  margin: unset;
+}

@@ -1,0 +1,30 @@
+.App {
+  display: grid;
+  grid-template-columns: 3fr 2fr;
+  height: 100vh;
+}
+.app-right {
+  border-left: 1px solid #e8e8e8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: white;
+  padding: 0 50px;
+}
+
+.app-left {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  color: var(--dark-blue);
+}
+
+.app-left img {
+  width: 200px;
+}
+
+.page-title {
+  color: var(--dark-blue);
+  font-size: 28pt;
+}

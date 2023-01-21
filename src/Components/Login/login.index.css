@@ -1,0 +1,11 @@
+.registration-trigger {
+  display: flex;
+  flex-direction: column;
+  margin-top: 30px;
+  font-size: 10pt;
+}
+
+.registration-trigger a {
+  text-decoration: none;
+  color: var(--mid-blue);
+}
