@@ -5,7 +5,7 @@
   font-size: 16px;
   line-height: 24px;
   font-weight: 400;
-  background: linear-gradient(to right, #3a76bd, white) no-repeat;
+  height: 100vh;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;

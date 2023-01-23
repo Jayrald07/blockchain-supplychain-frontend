@@ -2,6 +2,7 @@
   display: grid;
   grid-template-columns: 3fr 2fr;
   height: 100vh;
+  background: linear-gradient(to right, #3a76bd, white) no-repeat;
 }
 .app-right {
   border-left: 1px solid #e8e8e8;

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { ReactNode } from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
 import "./index.css";
@@ -7,7 +7,9 @@ import {
   RouterProvider,
   Route,
   Link,
+  useParams,
 } from "react-router-dom";
+import Navbar from "./Components/Navbar/navbar.index";
 
 const router = createBrowserRouter([
   {
@@ -24,10 +26,13 @@ const router = createBrowserRouter([
     path: "/login",
     element: <App />,
   },
+  {
+    path: "/navbar",
+    element: <Navbar />,
+  },
 ]);
-
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
-  <React.StrictMode>
-    <RouterProvider router={router} />
-  </React.StrictMode>
+  // <React.StrictMode>
+  <RouterProvider router={router} />
+  // </React.StrictMode>
 );
