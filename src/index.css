@@ -5,7 +5,6 @@
   font-size: 16px;
   line-height: 24px;
   font-weight: 400;
-  height: 100vh;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -30,5 +29,4 @@ body,
 html {
   margin: 0;
   padding: 0;
-  height: 100vh;
 }

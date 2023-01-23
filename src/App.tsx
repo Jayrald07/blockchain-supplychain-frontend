@@ -2,7 +2,6 @@ import React from "react";
 import "./App.css";
 import Logo from "./assets/logo.png";
 import Login from "./Components/Login/login.index";
-import Navbar from "./Components/Navbar/navbar.index";
 
 function App() {
   return (

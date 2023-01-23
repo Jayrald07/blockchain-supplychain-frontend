@@ -1,0 +1,29 @@
+.bsc-asset h1 {
+  margin: unset;
+  margin-bottom: 20px;
+}
+
+.bsc-asset {
+  margin: 50px 10%;
+}
+
+.bsc-asset > section {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr;
+}
+
+.bsc-asset section > ul {
+  list-style: none;
+  margin: 0;
+  padding: 20px 30px;
+  display: flex;
+  align-items: flex-end;
+}
+
+.bsc-asset section > ul a {
+  text-decoration: none;
+  display: inline-block;
+  color: var(--mid-blue);
+  margin: 0 20px;
+  font-weight: 500;
+}

@@ -1,15 +1,12 @@
-import React, { ReactNode } from "react";
+import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
 import "./index.css";
-import {
-  createBrowserRouter,
-  RouterProvider,
-  Route,
-  Link,
-  useParams,
-} from "react-router-dom";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Navbar from "./Components/Navbar/navbar.index";
+import Headerbar from "./Components/HeaderBar/headerbar.index";
+import Dashboard from "./Components/Dashboard/dashboard.index";
+import Asset from "./Components/Asset/asset.index";
 
 const router = createBrowserRouter([
   {
@@ -29,6 +26,18 @@ const router = createBrowserRouter([
   {
     path: "/navbar",
     element: <Navbar />,
+  },
+  {
+    path: "/header",
+    element: <Headerbar />,
+  },
+  {
+    path: "/dashboard",
+    element: <Dashboard />,
+  },
+  {
+    path: "/asset",
+    element: <Asset />,
   },
 ]);
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
