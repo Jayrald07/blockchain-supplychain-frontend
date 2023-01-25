@@ -1,0 +1,18 @@
+.qr-container {
+    display: flex;
+    position: absolute;
+    border: 2px solid rgb(240, 240, 240);
+    padding: 15px;
+    margin-bottom: 15px;
+    border-radius: 4px;
+    color: #163559;
+  }
+  .qr-icon {
+    font-size: 30px;
+  }
+  .qr-content{
+    font-weight: bold;
+    font-family: "open sans";
+    font-size: 15px;
+    padding: 3px 0px 0px 20px;
+  }
