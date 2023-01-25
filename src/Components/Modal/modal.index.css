@@ -1,0 +1,41 @@
+.bsc-modal {
+  position: absolute;
+  background-color: rgba(0, 0, 0, 0.2);
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.bsc-modal-box {
+  margin-top: 100px;
+  background-color: var(--light);
+  width: 40%;
+  height: fit-content;
+}
+
+.bsc-modal-box .bsc-modal-header h1 {
+  margin: 0;
+  font-size: 12pt;
+  width: 100%;
+}
+
+.bsc-modal-box .bsc-modal-header button {
+  background-color: unset;
+  border: 0;
+  color: var(--light);
+  cursor: pointer;
+}
+
+.bsc-modal-box .bsc-modal-header {
+  padding: 20px;
+  background-color: var(--dark-blue);
+  color: var(--light);
+  border-radius: 4px 4px 0 0;
+  display: flex;
+}
+
+.bsc-modal-content {
+  padding: 10px;
+  background-color: var(--light);
+}

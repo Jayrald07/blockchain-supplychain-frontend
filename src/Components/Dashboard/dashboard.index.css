@@ -1,3 +1,7 @@
 .bsc-dashboard {
   display: flex;
 }
+
+.bsc-dashboard > section:not(.bsc-modal) {
+  width: 100%;
+}

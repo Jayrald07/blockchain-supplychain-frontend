@@ -1,4 +1,4 @@
-.bsc-asset h1 {
+.bsc-asset > h1 {
   margin: unset;
   margin-bottom: 20px;
 }
@@ -7,23 +7,19 @@
   margin: 50px 10%;
 }
 
-.bsc-asset > section {
+.bsc-asset > section:not(.bsc-table) {
   display: grid;
-  grid-template-columns: 1fr 2fr 1fr;
+  grid-template-columns: repeat(4, 1fr);
+  grid-column-gap: 10px;
 }
 
-.bsc-asset section > ul {
-  list-style: none;
-  margin: 0;
-  padding: 20px 30px;
-  display: flex;
-  align-items: flex-end;
-}
-
-.bsc-asset section > ul a {
-  text-decoration: none;
-  display: inline-block;
-  color: var(--mid-blue);
-  margin: 0 20px;
-  font-weight: 500;
+.bsc-asset section > button {
+  align-self: center;
+  justify-self: end;
+  border: 1px solid var(--gray);
+  padding: 10px 20px;
+  background-color: var(--light);
+  border-radius: 4px;
+  font-weight: bold;
+  cursor: pointer;
 }

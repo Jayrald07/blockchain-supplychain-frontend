@@ -7,6 +7,7 @@ import {
   faTableColumns,
   faChevronLeft,
   faSignOut,
+  faArrowRight,
 } from "@fortawesome/free-solid-svg-icons";
 import Logo from "../../assets/logo.png";
 
@@ -17,6 +18,7 @@ export default () => {
   const dashboard: any = useRef(null);
   const asset: any = useRef(null);
   const transaction: any = useRef(null);
+  const transfer: any = useRef(null);
   const logout: any = useRef(null);
 
   const [isNavOpen, setIsNavOpen] = useState(true);
@@ -49,6 +51,7 @@ export default () => {
 
     toggleTab(dashboard.current);
     toggleTab(asset.current);
+    toggleTab(transfer.current);
     toggleTab(transaction.current);
     toggleTab(logout.current);
 
@@ -70,6 +73,11 @@ export default () => {
         <li>
           <a href="#" ref={dashboard}>
             <FontAwesomeIcon icon={faTableColumns} /> <span>Dashboard</span>
+          </a>
+        </li>
+        <li>
+          <a href="#" ref={transfer}>
+            <FontAwesomeIcon icon={faArrowRight} /> <span>Transfers</span>
           </a>
         </li>
         <li>

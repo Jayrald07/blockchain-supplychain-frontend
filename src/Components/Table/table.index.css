@@ -1,0 +1,24 @@
+.bsc-table > table {
+  width: 100%;
+  background-color: var(--table-bg);
+  border-collapse: collapse;
+}
+
+.bsc-table > table thead tr {
+  text-align: left;
+  background-color: var(--dark-blue);
+  color: var(--light);
+}
+
+.bsc-table > table thead th,
+.bsc-table > table tbody td {
+  padding: 10px 20px;
+  font-size: 11pt;
+}
+
+.bsc-table > table tbody button {
+  border: none;
+  color: var(--mid-blue);
+  font-weight: bold;
+  cursor: pointer;
+}
