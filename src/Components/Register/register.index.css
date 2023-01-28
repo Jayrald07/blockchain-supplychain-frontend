@@ -1,0 +1,35 @@
+.bsc-asset {
+  margin: 50px 10%;
+  color: #163559;
+}
+.bsc-asset > section {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+}
+.bsc-asset > div {
+  display: grid;
+  grid-template-columns: 2fr;
+}
+.bsc-input * {
+  display: block;
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+.bsc-input label {
+  margin-bottom: 6px;
+  font-size: 10pt;
+}
+
+.bsc-input input {
+  border: 1px solid var(--gray);
+  padding: 10px 15px;
+  width: 90%;
+  border-radius: 4px;
+}
+
+.input-container {
+  display: flex;
+}
+
+
