@@ -1,4 +1,4 @@
-import "./register-card.index.css";
+import "./register.index.css";
 
 type InputProps = {
   type: string;

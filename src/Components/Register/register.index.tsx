@@ -1,5 +1,5 @@
 import Input from "./register-input.index";
-import "./register-card.index.css";
+import "./register.index.css";
 
 
 export default () => {
