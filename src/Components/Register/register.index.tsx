@@ -4,9 +4,9 @@ import "./register.index.css";
 
 export default () => {
   return (
-    <form className="bsc-asset">
+    <form className="reg-asset">
       <h2>Register</h2>
-      <section className="bsc-input">
+      <section className="reg-input">
         <Input
           type="text"
           label="Organization name"
@@ -18,14 +18,14 @@ export default () => {
           placeholder="Type of organization"
         />
       </section>
-      <div className="bsc-input">
+      <div className="reg-input">
         <Input
             type="text"
             label="Address"
             placeholder="Address"
         />
       </div>
-      <section className="bsc-input">
+      <section className="reg-input">
         <Input
           type="text"
           label="Username"
@@ -43,14 +43,14 @@ export default () => {
         />
       </section>
       <h2>Node Creation</h2>
-      <section className="bsc-input">
+      <section className="reg-input">
         <Input
             type="text"
             label="Type of node"
             placeholder="Type of node"
         />
       </section>
-      <section className="bsc-input">
+      <section className="reg-input">
         <Input
           type="text"
           label="Private key"
