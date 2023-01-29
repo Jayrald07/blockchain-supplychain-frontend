@@ -8,6 +8,7 @@ import Navbar from "./Components/Navbar/navbar.index";
 import Headerbar from "./Components/HeaderBar/headerbar.index";
 import Dashboard from "./Components/Dashboard/dashboard.index";
 import Asset from "./Components/Asset/asset.index";
+import Register from "./Components/Register/register.index";
 
 const router = createBrowserRouter([
   {
@@ -43,6 +44,10 @@ const router = createBrowserRouter([
   {
     path: "/test",
     element: <Test />,
+  },
+  {
+    path: "/register",
+    element: <Register />,
   },
 ]);
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
