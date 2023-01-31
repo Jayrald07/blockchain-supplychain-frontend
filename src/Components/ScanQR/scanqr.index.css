@@ -1,0 +1,18 @@
+.qr-scan-container {
+  /* display: flex; */
+  align-items: center;
+  flex-direction: column;
+  justify-content: center;
+  height: 100vh;
+  width: 100%;
+}
+
+.qr-scan-container #qr-scan {
+  width: 100%;
+  border: 1px solid black;
+}
+
+.qr-scan-action {
+  /* position: absolute; */
+  bottom: 0;
+}

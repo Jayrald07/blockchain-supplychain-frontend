@@ -9,6 +9,7 @@ import Headerbar from "./Components/HeaderBar/headerbar.index";
 import Dashboard from "./Components/Dashboard/dashboard.index";
 import Asset from "./Components/Asset/asset.index";
 import Register from "./Components/Register/register.index";
+import Scanqr from "./Components/ScanQR/scanqr.index";
 
 const router = createBrowserRouter([
   {
@@ -48,6 +49,10 @@ const router = createBrowserRouter([
   {
     path: "/register",
     element: <Register />,
+  },
+  {
+    path: "/scan",
+    element: <Scanqr />,
   },
 ]);
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
