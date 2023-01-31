@@ -29,7 +29,12 @@ export default () => {
       setCamera(devices);
     });
 
-    html5qr.current = new Html5Qrcode("qr-scan");
+    (async function () {
+      html5qr.current = new Html5Qrcode("qr-scan");
+      await html5qr.current.applyVideoConstraints({
+        facingMode: "environment",
+      });
+    })();
   }, []);
 
   return (
