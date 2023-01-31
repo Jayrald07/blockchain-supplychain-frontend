@@ -9,7 +9,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     environment:
-      name: development
+      name: deploy
       url: https://blockchain-frontend.s3-website-us-east-1.amazonaws.com
     permissions:
       id-token: write
