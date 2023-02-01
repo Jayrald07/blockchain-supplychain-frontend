@@ -5,3 +5,9 @@
 .bsc-dashboard > section:not(.bsc-modal) {
   width: 100%;
 }
+
+.bsc-dashboard-card {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  margin: 50px 10%;
+}

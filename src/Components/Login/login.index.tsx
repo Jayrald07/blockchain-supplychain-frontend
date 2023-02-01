@@ -14,7 +14,7 @@ const Panel = () => {
       </Form>
       <section className="registration-trigger">
         <label>Don't have an account yet?</label>
-        <a href="#">Create your account here</a>
+        <a href="/register">Create your account here</a>
       </section>
     </>
   );

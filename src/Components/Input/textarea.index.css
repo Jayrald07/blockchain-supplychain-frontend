@@ -1,0 +1,14 @@
+.textarea-container label {
+  font-size: 10pt;
+  margin-bottom: 6px;
+  display: block;
+}
+
+.textarea-container textarea {
+  width: 100%;
+  display: block;
+  border: 1px solid var(--light-gray);
+  padding: 10px;
+  font-family: Open Sans;
+  resize: none;
+}

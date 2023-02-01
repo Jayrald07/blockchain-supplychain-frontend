@@ -10,6 +10,8 @@ import Dashboard from "./Components/Dashboard/dashboard.index";
 import Asset from "./Components/Asset/asset.index";
 import Register from "./Components/Register/register.index";
 import Scanqr from "./Components/ScanQR/scanqr.index";
+import Login from "./Components/Login/login.index";
+import AccountIndex from "./Components/Account/account.index";
 
 const router = createBrowserRouter([
   {
@@ -20,11 +22,37 @@ const router = createBrowserRouter([
         <p>This will be used for validation of current user's session</p>
       </>
     ),
-    errorElement: <h1>Error, Bhiee.</h1>,
+    errorElement: (
+      <div
+        style={{
+          display: "flex",
+          width: "100%",
+          height: "100vh",
+          alignItems: "center",
+          justifyContent: "center",
+          flexDirection: "column",
+        }}
+      >
+        <h1>Page is not found.</h1>
+        <a
+          href="/dashboard"
+          style={{
+            textDecoration: "none",
+            backgroundColor: "var(--dark-blue)",
+            color: "var(--light)",
+            padding: "10px 20px",
+            fontSize: "10pt",
+            borderRadius: "100px",
+          }}
+        >
+          Back to Dashboard
+        </a>
+      </div>
+    ),
   },
   {
     path: "/login",
-    element: <App />,
+    element: <App Component={Login} />,
   },
   {
     path: "/navbar",
@@ -43,16 +71,16 @@ const router = createBrowserRouter([
     element: <Asset />,
   },
   {
-    path: "/test",
-    element: <Test />,
-  },
-  {
     path: "/register",
-    element: <Register />,
+    element: <App Component={Register} />,
   },
   {
     path: "/scan",
     element: <Scanqr />,
+  },
+  {
+    path: "/account",
+    element: <AccountIndex />,
   },
 ]);
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(

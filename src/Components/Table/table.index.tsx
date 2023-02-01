@@ -7,7 +7,17 @@ type Row = {
   organization: string;
 };
 
-export default ({ rows }: { rows: Row[] }) => {
+export default ({
+  rows,
+  handleView,
+  handleUpdate,
+  handleRemove,
+}: {
+  rows: Row[];
+  handleView?: any;
+  handleUpdate?: any;
+  handleRemove?: any;
+}) => {
   return (
     <section className="bsc-table">
       <table>
@@ -20,14 +30,16 @@ export default ({ rows }: { rows: Row[] }) => {
           </tr>
         </thead>
         <tbody>
-          {rows.map((item) => {
+          {rows?.map((item: any) => {
             return (
-              <tr>
-                <td>{item.id}</td>
-                <td>{item.name}</td>
-                <td>{item.organization}</td>
+              <tr key={item.asset_uuid}>
+                <td>{item.asset_uuid}</td>
+                <td>{item.asset_name}</td>
+                <td>Jayralds</td>
                 <td>
-                  <button>View</button>
+                  <button onClick={() => handleView(item._id)}>View</button>
+                  <button onClick={() => handleUpdate(item._id)}>Update</button>
+                  <button onClick={() => handleRemove(item._id)}>Remove</button>
                 </td>
               </tr>
             );

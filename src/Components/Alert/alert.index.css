@@ -1,0 +1,22 @@
+.alert-container {
+  position: absolute;
+  background-color: rgba(0, 0, 0, 0.1);
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.alert-box {
+  background-color: var(--light);
+  padding: 20px;
+  border-radius: 4px;
+  border-top: 5px solid var(--dark-blue);
+  width: 20%;
+}
+
+.alert-box > div {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}

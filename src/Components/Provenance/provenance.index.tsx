@@ -14,24 +14,22 @@ export default () => {
         </div>
       </div>
       {[
-        { type: "Supplier", name: "ElectriSource" },
-        { type: "Manufacturer", name: "Quing Ski Manufacturing" },
-        { type: "Distributor", name: "LBC Manila" },
         { type: "Retailer", name: "7-Eleven Manila" },
+        { type: "Distributor", name: "LBC Manila" },
+        { type: "Manufacturer", name: "Quing Ski Manufacturing" },
+        { type: "Supplier", name: "ElectriSource" },
       ].map((item) => {
         return (
-          <>
-            <div className="provenance-track">
-              <span className="provenance-column"></span>
-              <span className="provenance-track-icon">
-                <FontAwesomeIcon icon={faHouse} />
-              </span>
-              <div className="provenance-track-org">
-                <h1>{item.name}</h1>
-                <small>{item.type}</small>
-              </div>
+          <div className="provenance-track" key={item.type}>
+            <span className="provenance-column"></span>
+            <span className="provenance-track-icon">
+              <FontAwesomeIcon icon={faHouse} />
+            </span>
+            <div className="provenance-track-org">
+              <h1>{item.name}</h1>
+              <small>{item.type}</small>
             </div>
-          </>
+          </div>
         );
       })}
     </section>

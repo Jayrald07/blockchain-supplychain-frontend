@@ -1,12 +1,11 @@
 import React from "react";
 import "./App.css";
 import Logo from "./assets/logo.png";
-import Login from "./Components/Login/login.index";
 import QR from "./Components/QR/qr";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faQrcode } from "@fortawesome/free-solid-svg-icons";
 
-function App() {
+function App({ Component }: { Component: any }) {
   return (
     <div className="App">
       <section className="app-left">
@@ -20,7 +19,7 @@ function App() {
         {/* The Scan QR Code component is here */}
       </section>
       <section className="app-right">
-        <Login />
+        <Component />
       </section>
     </div>
   );

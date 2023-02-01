@@ -71,22 +71,22 @@ export default () => {
           </a>
         </li>
         <li>
-          <a href="#" ref={dashboard}>
+          <a href="/dashboard" ref={dashboard}>
             <FontAwesomeIcon icon={faTableColumns} /> <span>Dashboard</span>
           </a>
         </li>
         <li>
-          <a href="#" ref={transfer}>
-            <FontAwesomeIcon icon={faArrowRight} /> <span>Transfers</span>
-          </a>
-        </li>
-        <li>
-          <a href="#" ref={asset}>
+          <a href="/asset" ref={asset}>
             <FontAwesomeIcon icon={faDatabase} /> <span>Manage Assets</span>
           </a>
         </li>
         <li>
-          <a href="#" ref={transaction}>
+          <a href="/transfer" ref={transfer}>
+            <FontAwesomeIcon icon={faArrowRight} /> <span>Transfers</span>
+          </a>
+        </li>
+        <li>
+          <a href="/transaction" ref={transaction}>
             <FontAwesomeIcon icon={faChartLine} /> <span>Transactions</span>
           </a>
         </li>

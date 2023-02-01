@@ -3,17 +3,26 @@
   margin-bottom: 20px;
 }
 
-.bsc-asset {
+.bsc-asset > div {
+  /* margin: 50px 10%; */
+  width: 100%;
+}
+
+.bsc-asset > div > section {
   margin: 50px 10%;
 }
 
-.bsc-asset > section:not(.bsc-table) {
+.bsc-asset {
+  display: flex;
+}
+
+.bsc-asset > div > section > section:not(.bsc-table) {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   grid-column-gap: 10px;
 }
 
-.bsc-asset section > button {
+.asset-create {
   align-self: center;
   justify-self: end;
   border: 1px solid var(--gray);

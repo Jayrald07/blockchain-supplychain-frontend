@@ -13,7 +13,7 @@ export default () => {
           </a>
         </li>
         <li>
-          <a href="#">
+          <a href="/account">
             <FontAwesomeIcon icon={faUser} />
           </a>
         </li>

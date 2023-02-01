@@ -1,6 +1,6 @@
 .bsc-input * {
   display: block;
-  width: 100%;
+  /* width: 100%; */
   margin-bottom: 10px;
 }
 
@@ -12,18 +12,20 @@
 .bsc-input input {
   border: 1px solid var(--gray);
   padding: 10px 15px;
-  width: 90%;
+  width: 100%;
 }
 
 .input-container {
-  display: flex;
+  display: inline-block;
 }
 
 .input-icon {
   background-color: var(--light-gray);
-  width: 10%;
+  /* width: 10%; */
+  width: 40px;
   display: flex;
   align-items: center;
+  justify-content: center;
   border: 1px solid var(--gray);
   color: var(--dark-blue);
 }
