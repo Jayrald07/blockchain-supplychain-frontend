@@ -10,3 +10,14 @@
   text-decoration: none;
   color: var(--mid-blue);
 }
+
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.login-content {
+  width: 300px;
+}

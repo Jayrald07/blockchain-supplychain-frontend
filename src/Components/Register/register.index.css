@@ -1,4 +1,4 @@
-.reg-asset {
+/* .reg-asset {
   margin: 50px 10%;
   color: #163559;
 }
@@ -9,8 +9,6 @@
 }
 .reg-asset > div {
   display: grid;
-  /* grid-template-columns: 2fr; */
-  /* width: 70%; */
 }
 
 .reg-input:first-child {
@@ -19,7 +17,6 @@
 
 .reg-input * {
   display: block;
-  /* width: 100%; */
   margin-bottom: 10px;
 }
 
@@ -31,8 +28,6 @@
 .reg-input input {
   border: 1px solid var(--gray);
   padding: 10px 15px;
-  /* width: 90%; */
-  /* border-radius: 4px; */
 }
 
 .input-container {
@@ -44,4 +39,69 @@
   padding: 9px;
   margin: 0;
   border: 1px solid var(--light-gray);
+} */
+
+.registration-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+
+.holder {
+  width: 300px;
+}
+
+.registration-container h1 {
+  margin: 0;
+  color: var(--dark-blue);
+  font-size: 18pt;
+  margin-bottom: 10px;
+}
+
+.registration-container small {
+  margin-bottom: 30px;
+  display: block;
+}
+
+.selection-node a {
+  text-decoration: none;
+  color: var(--black);
+  display: block;
+  padding: 10px 20px;
+  border: 1px solid var(--gray);
+  border-radius: 4px;
+  margin-bottom: 10px;
+  font-size: 10pt;
+}
+
+.selection-node {
+  margin-bottom: 30px;
+}
+
+.node-by-me {
+  font-size: 10pt;
+}
+
+.node-by-me ol {
+  padding: 0;
+  padding-left: 20px;
+}
+
+.node-by-me ol li {
+  margin-bottom: 5px;
+}
+
+.button-dual {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.button-dual :first-child {
+  justify-self: self-start;
+}
+
+.button-dual :last-child {
+  justify-self: self-end;
 }

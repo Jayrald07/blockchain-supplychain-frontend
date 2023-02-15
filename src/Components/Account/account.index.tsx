@@ -11,6 +11,7 @@ export default () => {
   const [address, setAddress] = useState("");
   const [phone, setPhone] = useState("");
   const [type, setType] = useState("");
+  const [organizationName, setOrganizationName] = useState("");
 
   const api = axios.create({ baseURL: "http://localhost:8081" });
 
@@ -44,6 +45,7 @@ export default () => {
         setAddress(data.organization_address);
         setPhone(data.organization_phone);
         setType(data.organization_type_id.organization_type_name);
+        setOrganizationName(data.organization_name);
       }
     })();
   }, []);
@@ -55,7 +57,7 @@ export default () => {
         <HeaderbarIndex />
         <div>
           <h1>
-            Account <small className="badge">{type}</small>
+            Account / {organizationName} <small className="badge">{type}</small>
           </h1>
           <section className="account-bar">
             <h4>Contact Information</h4>

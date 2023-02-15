@@ -1,6 +1,5 @@
 .bsc-input * {
   display: block;
-  /* width: 100%; */
   margin-bottom: 10px;
 }
 
@@ -16,7 +15,7 @@
 }
 
 .input-container {
-  display: inline-block;
+  display: flex;
 }
 
 .input-icon {

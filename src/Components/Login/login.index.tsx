@@ -6,20 +6,18 @@ import "./login.index.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSignIn, IconDefinition } from "@fortawesome/free-solid-svg-icons";
 
-const Panel = () => {
-  return (
-    <>
-      <Form>
-        <Button label="Login" icon={<FontAwesomeIcon icon={faSignIn} />} />
-      </Form>
-      <section className="registration-trigger">
-        <label>Don't have an account yet?</label>
-        <a href="/register">Create your account here</a>
-      </section>
-    </>
-  );
-};
-
 export default () => {
-  return <Card Component={Panel} isBordered={false} />;
+  return (
+    <div className="login-container">
+      <div className="login-content">
+        <Form>
+          <Button label="Login" icon={<FontAwesomeIcon icon={faSignIn} />} />
+        </Form>
+        <section className="registration-trigger">
+          <label>Don't have an account yet?</label>
+          <a href="/register">Create your account here</a>
+        </section>
+      </div>
+    </div>
+  );
 };

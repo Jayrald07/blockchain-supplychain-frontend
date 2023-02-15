@@ -52,7 +52,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/login",
-    element: <App Component={Login} />,
+    element: <Login />,
   },
   {
     path: "/navbar",
@@ -72,7 +72,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/register",
-    element: <App Component={Register} />,
+    element: <Register />,
   },
   {
     path: "/scan",
