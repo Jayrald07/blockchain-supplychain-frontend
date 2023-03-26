@@ -7,10 +7,10 @@ type Button = {
   handleClick?: MouseEventHandler;
 };
 
-export default ({ label, icon, handleClick = () => {} }: Button) => {
+export default ({ label, icon, handleClick = () => { } }: Button) => {
   return (
-    <section className="button-container">
-      <button onClick={handleClick}>
+    <section className="flex justify-end">
+      <button onClick={handleClick} className="border py-2 px-3 text-sm rounded hover:bg-slate-200">
         {icon} {label}
       </button>
     </section>

@@ -1,11 +1,12 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import ButtonIndex from "../Button/button.index";
 import Input from "../Input/input.index";
 import "./register.index.css";
 import axios from "axios";
-import { redirect } from "react-router-dom";
+import { host, port } from "../../utilities";
 
-const api = axios.create({ baseURL: "http://localhost:8081" });
+
+const api = axios.create({ baseURL: `${host}:${port}` });
 
 const NodeByUser = ({ back }: any) => {
   const [step, setStep] = useState(0);
@@ -101,7 +102,7 @@ const NodeByUser = ({ back }: any) => {
   const checkID = async () => {
     if (id.trim()) {
       const { data } = await api.post("/validateID", { identifier: id });
-
+      console.log(data)
       if (data.message != "Done") alert("Invalid ID");
       else move(step + 1);
     }
@@ -127,7 +128,7 @@ const NodeByUser = ({ back }: any) => {
         port,
         organization_id: orgId,
       });
-
+      console.log(data);
       if (data.message === "Done") {
         move(step + 1);
         setTimeout(() => (location.href = "/login"), 20000);
@@ -148,7 +149,7 @@ const NodeByUser = ({ back }: any) => {
     }
   };
 
-  useEffect(() => {}, [step]);
+  useEffect(() => { }, [step]);
 
   return (
     <div className="node-by-me">

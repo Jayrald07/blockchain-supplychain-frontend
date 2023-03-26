@@ -15,6 +15,8 @@ import ModalIndex from "../Modal/modal.index";
 import TextareaIndex from "../Input/textarea.index";
 import ButtonIndex from "../Button/button.index";
 import AlertIndex from "../Alert/alert.index";
+import { host, port } from "../../utilities";
+
 
 const NewAsset = ({
   handleClose,
@@ -28,7 +30,7 @@ const NewAsset = ({
   const [assetName, setAssetName] = useState("");
   const [description, setDescription] = useState("");
 
-  const api = axios.create({ baseURL: "http://localhost:8081" });
+  const api = axios.create({ baseURL: `${host}:${port}` });
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
@@ -38,6 +40,10 @@ const NewAsset = ({
         asset_id: assetId,
         asset_name: assetName,
         asset_description: description,
+      }, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`
+        }
       });
 
       if (data.message === "Asset updated!") {
@@ -55,7 +61,7 @@ const NewAsset = ({
         },
         {
           headers: {
-            Authorization: `Basic ${localStorage.getItem("token")}`,
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         }
       );
@@ -71,7 +77,11 @@ const NewAsset = ({
   useEffect(() => {
     (async () => {
       if (assetId) {
-        const { data } = await api.get(`/asset/${assetId}`);
+        const { data } = await api.get(`/asset/${assetId}`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`
+          }
+        });
         setAssetName(data.asset_name);
         setDescription(data.asset_description);
       } else {
@@ -117,7 +127,7 @@ export default () => {
   const [toDelete, setToDelete] = useState("");
   const [isAlert, setIsAlert] = useState(false);
 
-  const api = axios.create({ baseURL: "http://localhost:8081" });
+  const api = axios.create({ baseURL: `${host}:${port}` });
 
   const handleUpdate = (assetId: string) => {
     setSelectedAssetId(assetId);
@@ -132,7 +142,11 @@ export default () => {
   };
 
   const handleRemoveAsset = async () => {
-    const { data } = await api.delete(`/asset/${toDelete}`);
+    const { data } = await api.delete(`/asset/${toDelete}`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`
+      }
+    });
 
     if (data.message === "Asset deleted!") {
       setIsAlert(false);
@@ -148,13 +162,21 @@ export default () => {
 
   const handleSearch = async (e: any) => {
     const value = e.target.value;
-    const { data } = await api.get(`/search/asset/${value ? value : "all"}`);
+    const { data } = await api.get(`/search/asset/${value ? value : "all"}`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`
+      }
+    });
     setAssets(data.asset);
     setSearchText(value);
   };
 
   useEffect(() => {
-    api.get(`/assets?page=1`).then(({ data }) => {
+    api.get(`/assets?page=1`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`
+      }
+    }).then(({ data }) => {
       setAssets(data.assets);
     });
   }, [isModal, isAlert]);

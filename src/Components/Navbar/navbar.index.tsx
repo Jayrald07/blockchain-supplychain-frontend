@@ -8,6 +8,7 @@ import {
   faChevronLeft,
   faSignOut,
   faArrowRight,
+  faChain,
 } from "@fortawesome/free-solid-svg-icons";
 import Logo from "../../assets/logo.png";
 
@@ -19,6 +20,7 @@ export default () => {
   const asset: any = useRef(null);
   const transaction: any = useRef(null);
   const transfer: any = useRef(null);
+  const connections: any = useRef(null);
   const logout: any = useRef(null);
 
   const [isNavOpen, setIsNavOpen] = useState(true);
@@ -53,49 +55,47 @@ export default () => {
     toggleTab(asset.current);
     toggleTab(transfer.current);
     toggleTab(transaction.current);
+    toggleTab(connections.current);
     toggleTab(logout.current);
 
     setIsNavOpen(!isNavOpen);
   };
 
-  useEffect(() => {}, [isNavOpen]);
+  useEffect(() => { }, [isNavOpen]);
 
   return (
-    <nav className="sidebar-nav" ref={navbar}>
+    <nav className="grid h-full bg-sky-700" ref={navbar}>
       <ol>
-        <li ref={firstList}>
+        {/* <li ref={firstList}>
           <img src={Logo} draggable="false" />
           <span>ChainDirect</span>
           <a href="#" ref={toggler} onClick={handleToggler}>
             <FontAwesomeIcon icon={faChevronLeft} />
           </a>
-        </li>
+        </li> */}
         <li>
-          <a href="/dashboard" ref={dashboard}>
+          <a className="p-5 text-white flex gap-x-4 items-center hover:bg-sky-600" href="/dashboard" ref={dashboard}>
             <FontAwesomeIcon icon={faTableColumns} /> <span>Dashboard</span>
           </a>
         </li>
         <li>
-          <a href="/asset" ref={asset}>
+          <a className="p-5 text-white flex gap-x-4 items-center hover:bg-sky-600" href="/asset" ref={asset}>
             <FontAwesomeIcon icon={faDatabase} /> <span>Manage Assets</span>
           </a>
         </li>
         <li>
-          <a href="/transfer" ref={transfer}>
+          <a className="p-5 text-white flex gap-x-4 items-center hover:bg-sky-600" href="/transfer" ref={transfer}>
             <FontAwesomeIcon icon={faArrowRight} /> <span>Transfers</span>
           </a>
         </li>
         <li>
-          <a href="/transaction" ref={transaction}>
+          <a className="p-5 text-white flex gap-x-4 items-center hover:bg-sky-600" href="/transaction" ref={transaction}>
             <FontAwesomeIcon icon={faChartLine} /> <span>Transactions</span>
           </a>
         </li>
-      </ol>
-      <ol>
         <li>
-          <a href="#" ref={logout}>
-            <FontAwesomeIcon icon={faSignOut} />
-            <span>Logout</span>
+          <a className="p-5 text-white flex gap-x-4 items-center hover:bg-sky-600" href="/connections" ref={connections}>
+            <FontAwesomeIcon icon={faChain} /> <span>Connections</span>
           </a>
         </li>
       </ol>

@@ -1,23 +1,56 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Button from "../Button/button.index";
 import Card from "../Card/card.index";
 import Form from "../Form/form.index";
 import "./login.index.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSignIn, IconDefinition } from "@fortawesome/free-solid-svg-icons";
+import useLocalstorageValidation from "../../hooks/useLocalstoragevalidation";
+import Logo from "../../assets/logo.png"
+import AlertIndex from "../Alert/alert.index";
 
 export default () => {
-  return (
-    <div className="login-container">
-      <div className="login-content">
-        <Form>
-          <Button label="Login" icon={<FontAwesomeIcon icon={faSignIn} />} />
-        </Form>
-        <section className="registration-trigger">
-          <label>Don't have an account yet?</label>
-          <a href="/register">Create your account here</a>
-        </section>
-      </div>
-    </div>
-  );
+
+  const isCurrentLogin = useLocalstorageValidation();
+  const [isModal, setIsModal] = useState(false)
+  const [alertTitle, setAlertTitle] = useState("");
+  const [alertContent, setAlertContent] = useState("");
+
+  const handleResponse = (data: any) => {
+    console.log(data)
+    if (data.message === "Error") {
+      setIsModal(true);
+      setAlertTitle("Credential Error");
+      setAlertContent(data.details);
+    }
+
+  }
+
+  useEffect(() => {
+    if (isCurrentLogin === "valid") location.href = "/dashboard";
+  }, [isCurrentLogin]);
+
+  if (isCurrentLogin === "invalid" || isCurrentLogin === "validating") {
+    return (
+      <>
+        {
+          isModal &&
+          <AlertIndex type="error" content={alertContent} title={alertTitle} handleClose={() => setIsModal(!isModal)} />
+        }
+        <div className="w-full h-full flex justify-center items-center flex-col">
+          <img src={Logo} className="w-32" />
+          <div className="self-center">
+            <Form handleResponse={handleResponse}>
+              <Button label="Login" icon={<FontAwesomeIcon icon={faSignIn} />} />
+            </Form>
+            <section className="flex flex-col items-end text-xs font-light">
+              <label className="font-normal">Don't have an account yet?</label>
+              <a href="/register" className="underline hover:no-underline">Create your account here</a>
+            </section>
+          </div>
+        </div>
+      </>
+    );
+  } else return null
+
 };

@@ -1,9 +1,7 @@
-import React, { useEffect, useState } from "react";
-import Asset from "../Asset/asset.index";
+import { useEffect, useState } from "react";
 import Headerbar from "../HeaderBar/headerbar.index";
 import Navbar from "../Navbar/navbar.index";
-import Modal from "../Modal/modal.index";
-import "./dashboard.index.css";
+// import "./dashboard.index.css";
 import DashboardCard from "./dashboard-card";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -12,23 +10,33 @@ import {
   faChartLine,
 } from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
+import { host, port } from "../../utilities";
+import Auth from "../Auth/auth.index";
 
-export default () => {
+const Dashboard = () => {
   const [assetCount, setAssetCount] = useState(0);
 
-  const api = axios.create({ baseURL: "http://localhost:8081" });
+  const api = axios.create({ baseURL: `${host}:${port}` });
 
   useEffect(() => {
     (async () => {
-      const { data } = await api.get("/assets");
-      setAssetCount(data.count);
+      try {
+        const { data } = await api.get("/assets", {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`
+          }
+        });
+        setAssetCount(data.count);
+      } catch (error: any) {
+        alert("Error")
+      }
     })();
   }, []);
 
   return (
-    <div className="bsc-dashboard">
+    <div className="grid grid-cols-5 h-full">
       <Navbar />
-      <section>
+      <section className="col-span-4">
         <Headerbar />
         <div className="bsc-dashboard-card">
           <DashboardCard
@@ -49,5 +57,8 @@ export default () => {
         </div>
       </section>
     </div>
-  );
+  )
 };
+
+
+export default () => <Auth Component={Dashboard} />;

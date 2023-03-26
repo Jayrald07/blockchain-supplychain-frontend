@@ -20,10 +20,10 @@ export default ({
   disabled = false,
 }: InputProps) => {
   return (
-    <section className="bsc-input">
-      <label>{label}</label>
-      <div className="input-container">
-        {icon && <div className="input-icon">{icon}</div>}
+    <section className="mb-4">
+      <label className="text-sm mb-2 block">{label}</label>
+      <div className="border flex flex-item">
+        {icon && <div className="w-10 flex items-center justify-center bg-slate-200 text-slate-600">{icon}</div>}
 
         <input
           disabled={disabled}
@@ -31,6 +31,7 @@ export default ({
           placeholder={placeholder}
           onChange={handler}
           value={value}
+          className="outline-none font-thin py-2 px-3 text-sm"
         />
       </div>
     </section>

@@ -6,25 +6,28 @@ import axios from "axios";
 
 type Form = {
   children?: React.ReactNode;
+  handleResponse: Function
 };
 
-export default ({ children }: Form) => {
+export default ({ children, handleResponse }: Form) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const api = axios.create({ baseURL: "http://localhost:8081" });
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
-    const { data } = await api.post("/auth", { username, password });
 
+    if (!username.trim() || !password.trim()) return handleResponse({ message: "Error", details: "Please fill in all fields" });
+
+    const { data } = await api.post("/auth", { username, password });
     if (data.message === "Authorized") {
       localStorage.setItem("token", data.token);
       location.href = "/dashboard";
-    }
+    } else handleResponse(data)
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit} className="mb-5">
       <Input
         value={username}
         type="text"

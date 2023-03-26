@@ -12,6 +12,8 @@ import Register from "./Components/Register/register.index";
 import Scanqr from "./Components/ScanQR/scanqr.index";
 import Login from "./Components/Login/login.index";
 import AccountIndex from "./Components/Account/account.index";
+import Connections from "./Components/Connections/connections.index";
+import LogoutIndex from "./Components/Logout/logout.index";
 
 const router = createBrowserRouter([
   {
@@ -82,6 +84,14 @@ const router = createBrowserRouter([
     path: "/account",
     element: <AccountIndex />,
   },
+  {
+    path: "/connections",
+    element: <Connections />
+  },
+  {
+    path: "/logout",
+    element: <LogoutIndex />
+  }
 ]);
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   // <React.StrictMode>
