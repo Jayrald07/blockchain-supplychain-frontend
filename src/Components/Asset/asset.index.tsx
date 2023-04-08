@@ -16,6 +16,7 @@ import TextareaIndex from "../Input/textarea.index";
 import ButtonIndex from "../Button/button.index";
 import AlertIndex from "../Alert/alert.index";
 import { host, port } from "../../utilities";
+import AuthIndex from "../Auth/auth.index";
 
 
 const NewAsset = ({
@@ -118,7 +119,7 @@ const NewAsset = ({
   );
 };
 
-export default () => {
+const Asset = () => {
   const [searchText, setSearchText] = useState("");
   const [assets, setAssets] = useState([]);
   const [isModal, setIsModal] = useState(false);
@@ -182,11 +183,11 @@ export default () => {
   }, [isModal, isAlert]);
 
   return (
-    <main className="bsc-asset">
+    <main className="grid grid-cols-5 h-full">
       <NavbarIndex />
-      <div>
+      <div className="col-span-4">
         <HeaderbarIndex />
-        <section>
+        <section className="px-32 pt-20">
           <h1>Manage Assets</h1>
           <section>
             <InputIndex
@@ -200,7 +201,7 @@ export default () => {
             <span></span>
             <span></span>
             <button
-              className="asset-create"
+              className=""
               onClick={() => {
                 setAction("");
                 setIsModal(true);
@@ -217,16 +218,16 @@ export default () => {
           />
         </section>
       </div>
-      {isAlert ? (
-        <AlertIndex
-          content="Are you sure to remove?"
-          handleOk={handleRemoveAsset}
-          handleCancel={() => {
-            setToDelete("");
-            setIsAlert(false);
-          }}
-        />
-      ) : null}
+      {/* {isAlert ? (
+          <AlertIndex
+
+            content="Are you sure to remove?"
+            handleClose={() => {
+              setToDelete("");
+              setIsAlert(false);
+            }}
+          />
+        ) : null} */}
       {isModal ? (
         <ModalIndex
           assetId={selectedAssetId}
@@ -241,3 +242,5 @@ export default () => {
     </main>
   );
 };
+
+export default () => <AuthIndex Component={Asset} />

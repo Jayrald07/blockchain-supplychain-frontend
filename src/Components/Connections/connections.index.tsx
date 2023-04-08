@@ -11,6 +11,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faArrowDown, faChevronDown, faEnvelopeOpen, faPlus } from "@fortawesome/free-solid-svg-icons"
 import { Modal } from "../Modalv2/modal.index"
 import moment from "moment"
+import AuthIndex from "../Auth/auth.index"
 
 const api = axios.create({
     baseURL: `${import.meta.env.VITE_BACKEND_API_HOST}:${import.meta.env.VITE_BACKEND_API_PORT}`,
@@ -23,7 +24,7 @@ const modalContents = [
 
 ]
 
-export default () => {
+const Connection = () => {
     const [channelName, setChannelName] = useState("");
     const [organizations, setOrganizations] = useState([]);
     const socket = useRef<Socket>();
@@ -132,7 +133,7 @@ export default () => {
         <Navbar />
         {
             isModal ?
-                <Modal title={["Invite Organization", "Invitation Received", "Invitation Sent"][modalContentChoice - 1]} toggleModal={() => setIsModal(!isModal)}>
+                <Modal title={["Invite Organization", "Received Invitation", "Sent Invitation"][modalContentChoice - 1]} toggleModal={() => setIsModal(!isModal)}>
                     {
                         modalContentChoice === 1 ?
                             <table className="w-full border border-slate-100">
@@ -278,3 +279,6 @@ export default () => {
         </div>
     </div>
 }
+
+
+export default () => <AuthIndex Component={Connection} />

@@ -11,6 +11,7 @@ import {
   faChain,
 } from "@fortawesome/free-solid-svg-icons";
 import Logo from "../../assets/logo.png";
+import { useLocation } from "react-router-dom";
 
 export default () => {
   const navbar: any = useRef(null);
@@ -22,6 +23,8 @@ export default () => {
   const transfer: any = useRef(null);
   const connections: any = useRef(null);
   const logout: any = useRef(null);
+  const location = useLocation();
+
 
   const [isNavOpen, setIsNavOpen] = useState(true);
 
@@ -64,7 +67,7 @@ export default () => {
   useEffect(() => { }, [isNavOpen]);
 
   return (
-    <nav className="grid h-full bg-sky-700" ref={navbar}>
+    <nav className="grid h-full bg-slate-700" ref={navbar}>
       <ol>
         {/* <li ref={firstList}>
           <img src={Logo} draggable="false" />
@@ -74,27 +77,27 @@ export default () => {
           </a>
         </li> */}
         <li>
-          <a className="p-5 text-white flex gap-x-4 items-center hover:bg-sky-600" href="/dashboard" ref={dashboard}>
+          <a className={`p-5 text-white flex gap-x-4 items-center ${location.pathname === "/dashboard" ? 'bg-slate-600' : ''} hover:bg-slate-600`} href="/dashboard" ref={dashboard}>
             <FontAwesomeIcon icon={faTableColumns} /> <span>Dashboard</span>
           </a>
         </li>
         <li>
-          <a className="p-5 text-white flex gap-x-4 items-center hover:bg-sky-600" href="/asset" ref={asset}>
+          <a className={`p-5 text-white flex gap-x-4 items-center ${location.pathname === "/asset" ? 'bg-slate-600' : ''} hover:bg-slate-600`} href="/asset" ref={asset}>
             <FontAwesomeIcon icon={faDatabase} /> <span>Manage Assets</span>
           </a>
         </li>
         <li>
-          <a className="p-5 text-white flex gap-x-4 items-center hover:bg-sky-600" href="/transfer" ref={transfer}>
+          <a className={`p-5 text-white flex gap-x-4 items-center ${location.pathname === "/transfer" ? 'bg-slate-600' : ''} hover:bg-slate-600`} href="/transfer" ref={transfer}>
             <FontAwesomeIcon icon={faArrowRight} /> <span>Transfers</span>
           </a>
         </li>
         <li>
-          <a className="p-5 text-white flex gap-x-4 items-center hover:bg-sky-600" href="/transaction" ref={transaction}>
+          <a className={`p-5 text-white flex gap-x-4 items-center ${location.pathname === "/transaction" ? 'bg-slate-600' : ''} hover:bg-slate-600`} href="/transaction" ref={transaction}>
             <FontAwesomeIcon icon={faChartLine} /> <span>Transactions</span>
           </a>
         </li>
         <li>
-          <a className="p-5 text-white flex gap-x-4 items-center hover:bg-sky-600" href="/connections" ref={connections}>
+          <a className={`p-5 text-white flex gap-x-4 items-center ${location.pathname === "/connections" ? 'bg-slate-600' : ''} hover:bg-slate-600`} href="/connections" ref={connections}>
             <FontAwesomeIcon icon={faChain} /> <span>Connections</span>
           </a>
         </li>

@@ -38,14 +38,14 @@ export default () => {
           <AlertIndex type="error" content={alertContent} title={alertTitle} handleClose={() => setIsModal(!isModal)} />
         }
         <div className="w-full h-full flex justify-center items-center flex-col">
-          <img src={Logo} className="w-32" />
+          <img src={Logo} className="w-28 mb-6" />
           <div className="self-center">
             <Form handleResponse={handleResponse}>
               <Button label="Login" icon={<FontAwesomeIcon icon={faSignIn} />} />
             </Form>
             <section className="flex flex-col items-end text-xs font-light">
-              <label className="font-normal">Don't have an account yet?</label>
-              <a href="/register" className="underline hover:no-underline">Create your account here</a>
+              <label className="font-normal">Haven't connected your server yet?</label>
+              <a href="/register" className="underline hover:no-underline">Connect it here</a>
             </section>
           </div>
         </div>

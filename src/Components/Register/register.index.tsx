@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import ButtonIndex from "../Button/button.index";
 import Input from "../Input/input.index";
-import "./register.index.css";
 import axios from "axios";
 import { host, port } from "../../utilities";
+import Alert from "../Alert/alert.index";
 
 
 const api = axios.create({ baseURL: `${host}:${port}` });
@@ -16,38 +16,42 @@ const NodeByUser = ({ back }: any) => {
   const [ip, setIp] = useState("");
   const [port, setPort] = useState("");
   const [orgId, setOrgId] = useState("");
+  const [alert, setAlert] = useState<null | { title: string, message: string, type: string }>(null)
 
   const listSteps = [
-    <ol>
-      <li>
-        Install the <a href="#">script</a> on you machine
-      </li>
-      <li>
-        Run the script like shown below. Make sure you are using Ubuntu or WSL
-        with Ubuntu
-      </li>
-      <li>
-        Once the script already ran, goto the setup page with this URL:
-        http://localhost:5173
-      </li>
-      <li>
-        Fill out the form, and click "Done". The creation of node will proceed,
-        and will take about 1 to 2 minutes.
-      </li>
-      <li>Once done, there will be instructions shown on the page.</li>
-      <li>
-        Lastly, input the ID in the textbox below.
-        <Input
-          type="text"
-          value={id}
-          label=""
-          placeholder="xxxx-xxxx-xxxx-xxxx"
-          handler={(e: any) => setId(e.target.value)}
-        />
-      </li>
-    </ol>,
+    <div className="w-80 mb-3 block">
+      <ol className="list list-decimal text-sm font-light pl-4 space-y-2">
+        <li>
+          Install the <a href="#" className="underline hover:no-underline">script</a> on you machine
+        </li>
+        <li>
+          Run the script like shown below. Make sure you are using Ubuntu or WSL
+          with Ubuntu
+        </li>
+        <li>
+          Once the script already ran, goto the setup page with this URL:
+          http://localhost:5173
+        </li>
+        <li>
+          Fill out the form, and click "Done". The creation of node will proceed,
+          and will take about 1 to 2 minutes.
+        </li>
+        <li>Once done, there will be instructions shown on the page.</li>
+        <li>
+          Lastly, input the ID in the textbox below.
+          <Input
+            type="text"
+            value={id}
+            label=""
+            placeholder="xxxx-xxxx-xxxx-xxxx"
+            handler={(e: any) => setId(e.target.value)}
+          />
+        </li>
+      </ol>
+    </div>
+    ,
     <>
-      <small>Associated ID: {id}</small>
+      <small className="font-light text-xs block mb-3">Associated ID: {id}</small>
 
       <Input
         label="Username"
@@ -63,35 +67,35 @@ const NodeByUser = ({ back }: any) => {
         value={password}
       />
     </>,
-    <>
-      <small>
+    <div className="w-80">
+      <small className="font-light text-xs block mb-3">
         Kindly input your node's IP Address and port. The system will check if
         there is connection.
       </small>
       <Input
         label="IP Address"
         type="text"
-        placeholder="192.168.1.1"
+        placeholder="Ex. 192.168.1.1"
         handler={(e: any) => setIp(e.target.value)}
         value={ip}
       />
       <Input
         label="Port"
         type="Port"
+        placeholder="Ex. 8012"
         handler={(e: any) => setPort(e.target.value)}
         value={port}
       />
-    </>,
-    <>
-      <h3>Node Registered!</h3>
-      <small>You node is successfully connected with the web app.</small>
-      <small>You can now interact with other organizations</small>
+    </div>,
+    <div className="w-80 mt-4 text-sm font-light mb-6">
+      <h3 className="mb-2 font-normal">Node Registered!</h3>
+      <p className="mb-2">You server/node is successfully connected with the web app. You can now interact with other organizations</p>
 
-      <small>
-        It will automatically redirect you to the login page in 20 seconds.
-        Click <a href="/login">here</a> for manual redirection
-      </small>
-    </>,
+      <p>
+        This page will redirect to login page in 20 seconds.
+        Click <a href="/login" className="underline hover:no-underline">here</a> for manual redirection
+      </p>
+    </div>,
   ];
 
   const move = (val: number) => {
@@ -102,8 +106,7 @@ const NodeByUser = ({ back }: any) => {
   const checkID = async () => {
     if (id.trim()) {
       const { data } = await api.post("/validateID", { identifier: id });
-      console.log(data)
-      if (data.message != "Done") alert("Invalid ID");
+      if (data.message != "Done") setAlert({ title: "Credential Error", message: data.message, type: "error" })
       else move(step + 1);
     }
   };
@@ -118,7 +121,7 @@ const NodeByUser = ({ back }: any) => {
     if (data.message === "Done" && data.details.status === "valid") {
       setOrgId(data.details.id);
       move(step + 1);
-    } else alert(data.details);
+    } else setAlert({ title: "Credential Error", message: data.details, type: "error" })
   };
 
   const checkHost = async () => {
@@ -131,10 +134,10 @@ const NodeByUser = ({ back }: any) => {
       console.log(data);
       if (data.message === "Done") {
         move(step + 1);
-        setTimeout(() => (location.href = "/login"), 20000);
-      } else alert("Cannot create connection");
+        setTimeout(() => { location.href = "/login" }, 20000);
+      } else setAlert({ title: "Connection Error", message: data.details, type: "error" })
     } catch (error: any) {
-      alert("Cannot connect");
+      setAlert({ title: "Connection Error", message: error.details, type: "error" })
     }
   };
 
@@ -152,10 +155,16 @@ const NodeByUser = ({ back }: any) => {
   useEffect(() => { }, [step]);
 
   return (
-    <div className="node-by-me">
+    <div>
+      {
+        alert && (
+          <Alert type={alert.type} content={alert.message} title={alert.title} handleClose={() => setAlert(null)} />
+        )
+      }
+
       {listSteps[step]}
       {step < 3 ? (
-        <div className="button-dual">
+        <div className="flex justify-end gap-x-2">
           <ButtonIndex label="Back" handleClick={() => move(step - 1)} />
           <ButtonIndex label="Next" handleClick={next()} />
         </div>
@@ -169,30 +178,32 @@ export default () => {
 
   return (
     <>
-      <div className="registration-container">
-        <div className="holder">
-          <h1>Register</h1>
-          {/* Selection of Node */}
+      <div className="flex items-center justify-center h-full">
+        <div className="">
+          <h1 className="mb-1">Register</h1>
           {provideNode == -1 ? (
             <div>
-              <small>
+              <small className="mb-3 block font-light">
                 Select option below on how you wanted to create your node
               </small>
-              <div className="selection-node">
-                <a href="javascript:void(0)">Provide node by webapp</a>
+              <div className="grid font-extralight text-sm gap-3 mb-4">
+                <a role="button" className="border py-2 px-3 rounded hover:bg-slate-100">Provide node by webapp</a>
                 <a
-                  href="javascript:void(0)"
+                  role="button"
                   onClick={() => {
                     setProvideNode(1);
                   }}
+                  className="border py-2 px-3 rounded hover:bg-slate-100"
                 >
                   Provide node by me
                 </a>
               </div>
-              <small>
-                Already have an account? <br />
-                <a href="/login">Login Instead</a>
-              </small>
+              <div className="grid justify-end text-end text-xs font-light">
+                <span className="font-normal">
+                  Already connected?
+                </span>
+                <a href="/login" className="underline hover:no-underline">Login Instead</a>
+              </div>
             </div>
           ) : null}
 

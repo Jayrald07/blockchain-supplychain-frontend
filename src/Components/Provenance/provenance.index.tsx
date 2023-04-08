@@ -5,12 +5,12 @@ import { faHouse } from "@fortawesome/free-solid-svg-icons";
 
 export default () => {
   return (
-    <section className="provenance-container">
-      <div className="provenance-logo">
-        <img src={Logo} />
+    <section className="p-10">
+      <div className="mb-10">
+        <img src={Logo} className="w-10 mb-2" />
         <div>
-          <h1>ChainDirect</h1>
-          <small>Securing your transfers</small>
+          <h1 className="text-2xl">ChainDirect</h1>
+          <small className="font-light">Securing your transfers</small>
         </div>
       </div>
       {[
@@ -20,14 +20,14 @@ export default () => {
         { type: "Supplier", name: "ElectriSource" },
       ].map((item) => {
         return (
-          <div className="provenance-track" key={item.type}>
-            <span className="provenance-column"></span>
-            <span className="provenance-track-icon">
-              <FontAwesomeIcon icon={faHouse} />
+          <div key={item.type} className="flex gap-x-2 mb-11 relative">
+            <span className="w-1 h-14 left-2 top-7 absolute bg-slate-200"></span>
+            <span>
+              <FontAwesomeIcon icon={faHouse} className="text-blue-900" />
             </span>
-            <div className="provenance-track-org">
+            <div>
               <h1>{item.name}</h1>
-              <small>{item.type}</small>
+              <small className="font-light text-xs">{item.type}</small>
             </div>
           </div>
         );

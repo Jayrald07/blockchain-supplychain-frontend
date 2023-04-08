@@ -5,8 +5,9 @@ import HeaderbarIndex from "../HeaderBar/headerbar.index";
 import InputIndex from "../Input/input.index";
 import NavbarIndex from "../Navbar/navbar.index";
 import "./account.index.css";
+import AuthIndex from "../Auth/auth.index";
 
-export default () => {
+const Account = () => {
   const [username, setUsername] = useState("");
   const [address, setAddress] = useState("");
   const [phone, setPhone] = useState("");
@@ -51,11 +52,11 @@ export default () => {
   }, []);
 
   return (
-    <div className="account-container">
+    <div className="grid grid-cols-5 h-full">
       <NavbarIndex />
-      <section className="account-content">
+      <section className="col-span-4">
         <HeaderbarIndex />
-        <div>
+        <div className="px-32 py-20">
           <h1>
             Account / {organizationName} <small className="badge">{type}</small>
           </h1>
@@ -90,3 +91,5 @@ export default () => {
     </div>
   );
 };
+
+export default () => <AuthIndex Component={Account} />

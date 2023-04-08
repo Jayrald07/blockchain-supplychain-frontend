@@ -8,7 +8,7 @@ export default () => {
   return (
     <header className="border-b grid grid-cols-2">
       <Statusbar />
-      <ul className="flex justify-end">
+      <ul className="flex justify-end text-slate-700">
         <li>
           <a href="#" className="p-5 px-6 block hover:bg-gray-100 ">
             <FontAwesomeIcon icon={faBell} />

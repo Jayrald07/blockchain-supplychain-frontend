@@ -31,7 +31,7 @@ export default ({
           placeholder={placeholder}
           onChange={handler}
           value={value}
-          className="outline-none font-thin py-2 px-3 text-sm"
+          className="outline-none font-thin py-2 px-3 text-sm w-full"
         />
       </div>
     </section>

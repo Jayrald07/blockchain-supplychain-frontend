@@ -38,21 +38,21 @@ const Dashboard = () => {
       <Navbar />
       <section className="col-span-4">
         <Headerbar />
-        <div className="bsc-dashboard-card">
+        <div className="grid grid-cols-3 px-20 py-20 gap-5">
           <DashboardCard
             label1="Number of OUs"
             label2="1"
-            icon={<FontAwesomeIcon icon={faUsers} />}
+            icon={<FontAwesomeIcon icon={faUsers} className="w-full" />}
           />
           <DashboardCard
             label1="Number of Assets"
             label2={assetCount}
-            icon={<FontAwesomeIcon icon={faBoxes} />}
+            icon={<FontAwesomeIcon icon={faBoxes} className="w-full" />}
           />
           <DashboardCard
             label1="Number of Transactions"
             label2="0"
-            icon={<FontAwesomeIcon icon={faChartLine} />}
+            icon={<FontAwesomeIcon icon={faChartLine} className="w-full" />}
           />
         </div>
       </section>
