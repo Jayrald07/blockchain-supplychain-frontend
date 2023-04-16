@@ -7,10 +7,9 @@ export default () => {
   return (
     <section className="p-10">
       <div className="mb-10">
-        <img src={Logo} className="w-10 mb-2" />
+        <img src={Logo} className="w-32 mb-2" />
         <div>
-          <h1 className="text-2xl">ChainDirect</h1>
-          <small className="font-light">Securing your transfers</small>
+          {/* <small className="font-light">Securing your transfers</small> */}
         </div>
       </div>
       {[

@@ -37,9 +37,9 @@ export default () => {
           isModal &&
           <AlertIndex type="error" content={alertContent} title={alertTitle} handleClose={() => setIsModal(!isModal)} />
         }
-        <div className="w-full h-full flex justify-center items-center flex-col">
-          <img src={Logo} className="w-28 mb-6" />
-          <div className="self-center">
+        <div className="w-full h-full flex justify-center items-center flex-col bg-slate-100">
+          <img src={Logo} className="w-52 mb-10" />
+          <div className="self-center bg-white border border-slate-200 rounded p-5">
             <Form handleResponse={handleResponse}>
               <Button label="Login" icon={<FontAwesomeIcon icon={faSignIn} />} />
             </Form>

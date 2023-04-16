@@ -1,8 +1,10 @@
+import AlertIndex from "../Alert/alert.index"
 import AuthIndex from "../Auth/auth.index"
 import Headerbar from "../HeaderBar/headerbar.index"
 import Navbar from "../Navbar/navbar.index"
 
 const Transfer = () => {
+
 
     return <div className="grid grid-cols-5 h-full">
         <Navbar />

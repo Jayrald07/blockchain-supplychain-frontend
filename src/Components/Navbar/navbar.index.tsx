@@ -9,6 +9,7 @@ import {
   faSignOut,
   faArrowRight,
   faChain,
+  faCog,
 } from "@fortawesome/free-solid-svg-icons";
 import Logo from "../../assets/logo.png";
 import { useLocation } from "react-router-dom";
@@ -77,6 +78,11 @@ export default () => {
           </a>
         </li> */}
         <li>
+          <a className='p-5 text-white flex gap-x-4 items-center text-center justify-center bg-slate-50' href="#" ref={dashboard}>
+            <img src={Logo} draggable="false" className="w-24" />
+          </a>
+        </li>
+        <li>
           <a className={`p-5 text-white flex gap-x-4 items-center ${location.pathname === "/dashboard" ? 'bg-slate-600' : ''} hover:bg-slate-600`} href="/dashboard" ref={dashboard}>
             <FontAwesomeIcon icon={faTableColumns} /> <span>Dashboard</span>
           </a>
@@ -99,6 +105,11 @@ export default () => {
         <li>
           <a className={`p-5 text-white flex gap-x-4 items-center ${location.pathname === "/connections" ? 'bg-slate-600' : ''} hover:bg-slate-600`} href="/connections" ref={connections}>
             <FontAwesomeIcon icon={faChain} /> <span>Connections</span>
+          </a>
+        </li>
+        <li>
+          <a className={`p-5 text-white flex gap-x-4 items-center ${location.pathname === "/connections" ? 'bg-slate-600' : ''} hover:bg-slate-600`} href="/connections" ref={connections}>
+            <FontAwesomeIcon icon={faCog} /> <span>Settings</span>
           </a>
         </li>
       </ol>

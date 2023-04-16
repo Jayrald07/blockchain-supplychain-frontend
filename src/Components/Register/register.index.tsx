@@ -178,8 +178,8 @@ export default () => {
 
   return (
     <>
-      <div className="flex items-center justify-center h-full">
-        <div className="">
+      <div className="flex items-center justify-center h-full bg-slate-100">
+        <div className="bg-white p-5 border border-slate-200 rounded">
           <h1 className="mb-1">Register</h1>
           {provideNode == -1 ? (
             <div>

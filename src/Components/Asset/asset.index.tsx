@@ -15,18 +15,21 @@ import ModalIndex from "../Modal/modal.index";
 import TextareaIndex from "../Input/textarea.index";
 import ButtonIndex from "../Button/button.index";
 import AlertIndex from "../Alert/alert.index";
-import { host, port } from "../../utilities";
+import { Action, host, port } from "../../utilities";
 import AuthIndex from "../Auth/auth.index";
+import ChannelIndex from "../Channel/channel.index";
 
 
 const NewAsset = ({
   handleClose,
   assetId,
   action,
+  channelId
 }: {
   handleClose: any;
   assetId: string;
   action: string;
+  channelId: string
 }) => {
   const [assetName, setAssetName] = useState("");
   const [description, setDescription] = useState("");
@@ -37,15 +40,18 @@ const NewAsset = ({
     e.preventDefault();
 
     if (action === "update") {
-      const { data } = await api.put("/asset", {
+      const { data } = await api.post("/chaincode", {
         asset_id: assetId,
         asset_name: assetName,
         asset_description: description,
+        channelId
       }, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`
         }
       });
+
+      console.log(data)
 
       if (data.message === "Asset updated!") {
         setAssetName("");
@@ -54,11 +60,15 @@ const NewAsset = ({
       }
     } else {
       const { data } = await api.post(
-        "/asset",
+        "/chaincode",
         {
-          asset_name: assetName,
-          tags: [],
-          asset_description: description,
+          action: Action.CREATE,
+          args: {
+            asset_name: assetName,
+            tags: [],
+            asset_description: description,
+            channelId
+          }
         },
         {
           headers: {
@@ -66,8 +76,7 @@ const NewAsset = ({
           },
         }
       );
-
-      if (data.message === "asset created") {
+      if (data.message === "Done" && data.details.message === 'Done') {
         setAssetName("");
         setDescription("");
         handleClose();
@@ -92,7 +101,7 @@ const NewAsset = ({
     })();
   }, []);
 
-  return (
+  return (<>
     <form onSubmit={handleSubmit}>
       <InputIndex
         disabled={action === "view" ? true : false}
@@ -116,6 +125,7 @@ const NewAsset = ({
         <ButtonIndex label={action === "update" ? "Update" : "Save"} />
       ) : null}
     </form>
+  </>
   );
 };
 
@@ -127,6 +137,8 @@ const Asset = () => {
   const [action, setAction] = useState("");
   const [toDelete, setToDelete] = useState("");
   const [isAlert, setIsAlert] = useState(false);
+  const [orgType, setOrgType] = useState("");
+  const [channel, setChannel] = useState('');
 
   const api = axios.create({ baseURL: `${host}:${port}` });
 
@@ -134,25 +146,6 @@ const Asset = () => {
     setSelectedAssetId(assetId);
     setAction("update");
     setIsModal(true);
-  };
-
-  const handleRemove = (assetId: string) => {
-    console.log(assetId);
-    setToDelete(assetId);
-    setIsAlert(true);
-  };
-
-  const handleRemoveAsset = async () => {
-    const { data } = await api.delete(`/asset/${toDelete}`, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`
-      }
-    });
-
-    if (data.message === "Asset deleted!") {
-      setIsAlert(false);
-      setToDelete("");
-    }
   };
 
   const handleView = (assetId: string) => {
@@ -172,14 +165,33 @@ const Asset = () => {
     setSearchText(value);
   };
 
+
   useEffect(() => {
-    api.get(`/assets?page=1`, {
+    if (channel.trim()) {
+      api.post('/chaincode', {
+        'action': Action.ASSETS,
+        'args': {
+          'channelId': channel
+        }
+      }, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        }
+      }).then(({ data }) => {
+        if (data.message === 'Done') setAssets(data.details.details)
+      }).catch(console.error);
+    }
+  }, [channel, isModal]);
+
+  useEffect(() => {
+    api.get("/account", {
       headers: {
         Authorization: `Bearer ${localStorage.getItem("token")}`
       }
     }).then(({ data }) => {
-      setAssets(data.assets);
-    });
+      setOrgType(data.organization_type_id.organization_type_name)
+    })
+
   }, [isModal, isAlert]);
 
   return (
@@ -188,8 +200,8 @@ const Asset = () => {
       <div className="col-span-4">
         <HeaderbarIndex />
         <section className="px-32 pt-20">
-          <h1>Manage Assets</h1>
-          <section>
+          <h1 className="text-2xl mb-5">Manage Assets</h1>
+          <section className="grid grid-cols-4 items-center gap-x-4">
             <InputIndex
               icon={<FontAwesomeIcon icon={faSearch} />}
               label="Search Asset"
@@ -198,10 +210,10 @@ const Asset = () => {
               value={searchText}
               handler={handleSearch}
             />
-            <span></span>
+            <ChannelIndex handleValue={(value) => setChannel(value)} />
             <span></span>
             <button
-              className=""
+              className="border rounded py-2 px-3.5 hover:bg-gray-100 text-xs"
               onClick={() => {
                 setAction("");
                 setIsModal(true);
@@ -213,11 +225,14 @@ const Asset = () => {
           <Table
             rows={assets}
             handleUpdate={handleUpdate}
-            handleRemove={handleRemove}
             handleView={handleView}
           />
         </section>
       </div>
+      {
+        isAlert ? <AlertIndex content="Asset created" title="Success" type="success" handleClose={() => setIsAlert(false)} /> : null
+      }
+
       {/* {isAlert ? (
           <AlertIndex
 
@@ -232,10 +247,12 @@ const Asset = () => {
         <ModalIndex
           assetId={selectedAssetId}
           action={action}
+          channelId={channel}
           Component={NewAsset}
           handleClose={() => {
             setSelectedAssetId("");
             setIsModal(false);
+            setIsAlert(true)
           }}
         />
       ) : null}

@@ -19,21 +19,21 @@ export default ({
   handleRemove?: any;
 }) => {
   return (
-    <section className="bsc-table">
-      <table>
-        <thead>
+    <section className="w-full">
+      <table className="w-full border border-slate-100">
+        <thead className="bg-slate-100 text-sm text-slate-600 text-left">
           <tr>
-            <th>No.</th>
+            <th className="p-2">Origin</th>
             <th>Name</th>
             <th>Organization</th>
             <th>Action</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody className="text-sm font-thin">
           {rows?.map((item: any) => {
             return (
-              <tr key={item.asset_uuid}>
-                <td>{item.asset_uuid}</td>
+              <tr key={item.asset_uuid} className="hover:bg-slate-50 border-b-slate-100">
+                <td className="py-2 px-2">{item.origin?.organization_name ?? "-"}</td>
                 <td>{item.asset_name}</td>
                 <td>Jayralds</td>
                 <td>

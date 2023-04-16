@@ -8,7 +8,7 @@ import { host, port } from "../../utilities";
 import ButtonIndex from "../Button/button.index"
 import { Socket, io } from "socket.io-client"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { faArrowDown, faChevronDown, faEnvelopeOpen, faPlus } from "@fortawesome/free-solid-svg-icons"
+import { faArrowDown, faChevronDown, faEnvelopeOpen, faPlus, faSpinner } from "@fortawesome/free-solid-svg-icons"
 import { Modal } from "../Modalv2/modal.index"
 import moment from "moment"
 import AuthIndex from "../Auth/auth.index"
@@ -32,19 +32,29 @@ const Connection = () => {
     const [isModal, setIsModal] = useState(false);
     const [modalContentChoice, setModalContentChoice] = useState(0);
     const [connectedOrganizations, setConnectedOrganizations] = useState([]);
+    const [tempLogs, setTempLogs] = useState<{ message: string, state: number }[]>([]);
 
     useEffect(() => {
-        socket.current?.on("channelInvite", (data) => {
-            console.log(data);
-        })
-    }, [socket]);
-
-    useEffect(() => {
-        socket.current = io("http://localhost:8081", {
+        socket.current = io(`${import.meta.env.VITE_BACKEND_API_HOST}:${import.meta.env.VITE_BACKEND_API_PORT}`, {
             query: {
                 token: localStorage.getItem("token")
             }
-        });
+        })
+            .on("channelInvite", (data) => {
+                console.log(data);
+            })
+            .on("p2p", data => {
+                setTempLogs((prevState) => {
+                    (async () => {
+                        if (data.state === 2) {
+                            const { data } = await api.get(`/invitesSent`);
+                            setInvitesReceived(data.details);
+                            getConnectedOrganizations();
+                        }
+                    })();
+                    return [...prevState, data];
+                })
+            })
         getConnectedOrganizations();
     }, []);
 
@@ -101,10 +111,7 @@ const Connection = () => {
     const handleConnect = async (inviteId: string) => {
         const { data } = await api.put(`/inviteConnect`, { inviteId });
         console.log(data.details);
-
-        await handleInvites(0);
-
-        location.reload()
+        setModalContentChoice(4);
 
     }
 
@@ -133,7 +140,7 @@ const Connection = () => {
         <Navbar />
         {
             isModal ?
-                <Modal title={["Invite Organization", "Received Invitation", "Sent Invitation"][modalContentChoice - 1]} toggleModal={() => setIsModal(!isModal)}>
+                <Modal title={["Invite Organization", "Received Invitation", "Sent Invitation", "Logs"][modalContentChoice - 1]} toggleModal={() => setIsModal(!isModal)}>
                     {
                         modalContentChoice === 1 ?
                             <table className="w-full border border-slate-100">
@@ -200,7 +207,7 @@ const Connection = () => {
                                         ))
                                     }
                                 </tbody>
-                            </table> : <table className="w-full border border-slate-100">
+                            </table> : modalContentChoice === 3 ? <table className="w-full border border-slate-100">
                                 <thead className="bg-slate-100 text-sm text-slate-600">
                                     <tr>
                                         <td className="p-2">Organization Name</td>
@@ -230,7 +237,21 @@ const Connection = () => {
                                         ))
                                     }
                                 </tbody>
-                            </table>
+                            </table> : <div>
+                                {
+                                    tempLogs[tempLogs.length - 1]?.state === 2 ? <div className="flex items-center gap-x-2 text-xs text-green-500"><span className="relative flex h-2 w-2">
+                                        <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                                    </span>Completed - <span className="font-light text-slate-700">You may now close this modal</span></div> : <div className="flex items-center gap-x-2 text-xs text-orange-500">
+                                        <FontAwesomeIcon icon={faSpinner} className="animate-spin" />In Progress -<span className="font-light text-slate-700">Please wait...</span></div>
+                                }
+                                <ul className="list-none p-0 font-light text-xs w-full h-60 overflow-y-auto mt-5">
+                                    {
+                                        tempLogs.map(log => {
+                                            return <><li className={`pb-1 ${log.state ? "text-green-700  font-bold" : ""}`}>{log.message}</li>{log.state === 2 ? <li className={`pb-1 ${log.state ? "font-bold" : ""}`} >-- Done --</li> : null}</>
+                                        })
+                                    }
+                                </ul>
+                            </div>
                     }
 
                 </Modal> : null
@@ -252,7 +273,7 @@ const Connection = () => {
                 <table className="w-full border border-slate-100">
                     <thead className="bg-slate-100 text-sm text-slate-600">
                         <tr>
-                            <td className="p-2">Organization Name</td>
+                            <td className="p-2">Connected to</td>
                             <td>Date Connected</td>
                         </tr>
                     </thead>
