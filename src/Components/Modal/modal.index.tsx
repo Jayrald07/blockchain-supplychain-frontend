@@ -25,7 +25,7 @@ export default ({
       }}
     >
       <div
-        className="w-2/4 bg-white rounded border shadow-md"
+        className="w-2/4 md:w-1/2 lg:w-1/2 xl:w-1/3 bg-white rounded border shadow-md"
         onClick={(e) => {
           e.stopPropagation();
         }}

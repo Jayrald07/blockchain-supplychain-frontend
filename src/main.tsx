@@ -16,6 +16,7 @@ import Connections from "./Components/Connections/connections.index";
 import LogoutIndex from "./Components/Logout/logout.index";
 import TransfersIndex from "./Components/Transfers/transfers.index";
 import TransactionsIndex from "./Components/Transactions/transactions.index";
+import SettingsIndex from "./Components/Settings/settings.index";
 
 const router = createBrowserRouter([
   {
@@ -97,6 +98,10 @@ const router = createBrowserRouter([
   {
     path: "/transaction",
     element: <TransactionsIndex />
+  },
+  {
+    path: "/settings",
+    element: <SettingsIndex />
   },
   {
     path: "/logout",

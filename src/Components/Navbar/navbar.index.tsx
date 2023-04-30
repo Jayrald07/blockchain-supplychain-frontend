@@ -12,7 +12,7 @@ import {
   faCog,
 } from "@fortawesome/free-solid-svg-icons";
 import Logo from "../../assets/logo.png";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 export default () => {
   const navbar: any = useRef(null);
@@ -25,6 +25,7 @@ export default () => {
   const connections: any = useRef(null);
   const logout: any = useRef(null);
   const location = useLocation();
+  const navigate = useNavigate();
 
 
   const [isNavOpen, setIsNavOpen] = useState(true);
@@ -68,7 +69,7 @@ export default () => {
   useEffect(() => { }, [isNavOpen]);
 
   return (
-    <nav className="grid h-full bg-slate-700" ref={navbar}>
+    <nav className="h-full bg-slate-700 md:grid sm:hidden hidden" ref={navbar}>
       <ol>
         {/* <li ref={firstList}>
           <img src={Logo} draggable="false" />
@@ -78,37 +79,37 @@ export default () => {
           </a>
         </li> */}
         <li>
-          <a className='p-5 text-white flex gap-x-4 items-center text-center justify-center bg-slate-50' href="#" ref={dashboard}>
-            <img src={Logo} draggable="false" className="w-24" />
+          <a className='p-5 py-4 text-white flex gap-x-4 items-center text-center justify-center bg-slate-50' href="#" ref={dashboard}>
+            <img src={Logo} draggable="false" className="w-32" />
           </a>
         </li>
         <li>
-          <a className={`p-5 text-white flex gap-x-4 items-center ${location.pathname === "/dashboard" ? 'bg-slate-600' : ''} hover:bg-slate-600`} href="/dashboard" ref={dashboard}>
+          <a className={`p-5 text-white flex gap-x-4 items-center ${location.pathname === "/dashboard" ? 'bg-slate-600' : ''} hover:bg-slate-600`} href="#" onClick={() => navigate("/dashboard")} ref={dashboard}>
             <FontAwesomeIcon icon={faTableColumns} /> <span>Dashboard</span>
           </a>
         </li>
         <li>
-          <a className={`p-5 text-white flex gap-x-4 items-center ${location.pathname === "/asset" ? 'bg-slate-600' : ''} hover:bg-slate-600`} href="/asset" ref={asset}>
+          <a className={`p-5 text-white flex gap-x-4 items-center ${location.pathname === "/asset" ? 'bg-slate-600' : ''} hover:bg-slate-600`} href="#" onClick={() => navigate("/asset")} ref={asset}>
             <FontAwesomeIcon icon={faDatabase} /> <span>Manage Assets</span>
           </a>
         </li>
         <li>
-          <a className={`p-5 text-white flex gap-x-4 items-center ${location.pathname === "/transfer" ? 'bg-slate-600' : ''} hover:bg-slate-600`} href="/transfer" ref={transfer}>
+          <a className={`p-5 text-white flex gap-x-4 items-center ${location.pathname === "/transfer" ? 'bg-slate-600' : ''} hover:bg-slate-600`} href="#" onClick={() => navigate("/transfer")} ref={transfer}>
             <FontAwesomeIcon icon={faArrowRight} /> <span>Transfers</span>
           </a>
         </li>
         <li>
-          <a className={`p-5 text-white flex gap-x-4 items-center ${location.pathname === "/transaction" ? 'bg-slate-600' : ''} hover:bg-slate-600`} href="/transaction" ref={transaction}>
+          <a className={`p-5 text-white flex gap-x-4 items-center ${location.pathname === "/transaction" ? 'bg-slate-600' : ''} hover:bg-slate-600`} href="#" onClick={() => navigate("/transaction")} ref={transaction}>
             <FontAwesomeIcon icon={faChartLine} /> <span>Transactions</span>
           </a>
         </li>
         <li>
-          <a className={`p-5 text-white flex gap-x-4 items-center ${location.pathname === "/connections" ? 'bg-slate-600' : ''} hover:bg-slate-600`} href="/connections" ref={connections}>
+          <a className={`p-5 text-white flex gap-x-4 items-center ${location.pathname === "/connections" ? 'bg-slate-600' : ''} hover:bg-slate-600`} href="#" onClick={() => navigate("/connections")} ref={connections}>
             <FontAwesomeIcon icon={faChain} /> <span>Connections</span>
           </a>
         </li>
         <li>
-          <a className={`p-5 text-white flex gap-x-4 items-center ${location.pathname === "/connections" ? 'bg-slate-600' : ''} hover:bg-slate-600`} href="/connections" ref={connections}>
+          <a className={`p-5 text-white flex gap-x-4 items-center ${location.pathname === "/settings" ? 'bg-slate-600' : ''} hover:bg-slate-600`} href="#" onClick={() => navigate("/settings")} ref={connections}>
             <FontAwesomeIcon icon={faCog} /> <span>Settings</span>
           </a>
         </li>

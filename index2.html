@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <input id="ss" type="text" value="0.00" />
+
+    <script>
+      let a = "0.00";
+      let isDecimal = false;
+      document.getElementById("ss").addEventListener("keyup", function (e) {
+        if (e.key === "Backspace") {
+        } else {
+          let get = a.split(".");
+          if (e.key === ".") isDecimal = true;
+
+          if (!isDecimal) {
+            get[0] = parseInt(`${get[0]}${e.key}`);
+            a = get.join(".");
+          } else {
+            if (parseInt(get[1]).toString().length < 2) {
+              get[1] = parseInt(`${get[1]}${e.key}`);
+              a = get.join(".");
+            }
+          }
+        }
+        document.getElementById("ss").value = a;
+      });
+    </script>
+  </body>
+</html>

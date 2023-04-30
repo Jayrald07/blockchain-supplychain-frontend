@@ -18,6 +18,8 @@ export default ({
   handleUpdate?: any;
   handleRemove?: any;
 }) => {
+
+  console.log(rows);
   return (
     <section className="w-full">
       <table className="w-full border border-slate-100">
@@ -25,7 +27,6 @@ export default ({
           <tr>
             <th className="p-2">Origin</th>
             <th>Name</th>
-            <th>Organization</th>
             <th>Action</th>
           </tr>
         </thead>
@@ -35,10 +36,9 @@ export default ({
               <tr key={item.asset_uuid} className="hover:bg-slate-50 border-b-slate-100">
                 <td className="py-2 px-2">{item.origin?.organization_name ?? "-"}</td>
                 <td>{item.asset_name}</td>
-                <td>Jayralds</td>
                 <td>
-                  <button onClick={() => handleView(item._id)}>View</button>
-                  <button onClick={() => handleUpdate(item._id)}>Update</button>
+                  <button className="pr-2" onClick={() => handleView(item._id)}>View</button>
+                  <button className="pr-2" onClick={() => handleUpdate(item._id)}>Update</button>
                   <button onClick={() => handleRemove(item._id)}>Remove</button>
                 </td>
               </tr>

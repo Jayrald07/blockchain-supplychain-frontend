@@ -6,6 +6,8 @@ import {
   faChevronDown,
   faPlus,
   faSearch,
+  faSpinner,
+  faTrash,
 } from "@fortawesome/free-solid-svg-icons";
 import Table from "../Table/table.index";
 import axios from "axios";
@@ -18,6 +20,8 @@ import AlertIndex from "../Alert/alert.index";
 import { Action, host, port } from "../../utilities";
 import AuthIndex from "../Auth/auth.index";
 import ChannelIndex from "../Channel/channel.index";
+import { TagService } from "../../services/tags";
+import { KeyValue, Response, Tag } from "../../typedef";
 
 
 const NewAsset = ({
@@ -33,12 +37,15 @@ const NewAsset = ({
 }) => {
   const [assetName, setAssetName] = useState("");
   const [description, setDescription] = useState("");
+  const [inSubmission, setIsSubmission] = useState(false);
+  const [tags, setTags] = useState<KeyValue[]>([]);
+  const [selectedTags, setSelectedTags] = useState<KeyValue[]>([]);
 
   const api = axios.create({ baseURL: `${host}:${port}` });
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
-
+    setIsSubmission(true)
     if (action === "update") {
       const { data } = await api.post("/chaincode", {
         asset_id: assetId,
@@ -51,12 +58,12 @@ const NewAsset = ({
         }
       });
 
-      console.log(data)
-
       if (data.message === "Asset updated!") {
         setAssetName("");
         setDescription("");
-        handleClose();
+        handleClose('returned');
+        setIsSubmission(false);
+        setSelectedTags([]);
       }
     } else {
       const { data } = await api.post(
@@ -65,7 +72,7 @@ const NewAsset = ({
           action: Action.CREATE,
           args: {
             asset_name: assetName,
-            tags: [],
+            tags: selectedTags,
             asset_description: description,
             channelId
           }
@@ -80,11 +87,81 @@ const NewAsset = ({
         setAssetName("");
         setDescription("");
         handleClose();
+        setIsSubmission(false);
+        setSelectedTags([])
       }
     }
   };
 
+  const handleTags = async () => {
+    try {
+      const data: Response<Tag[]> = await TagService.getTags();
+
+      if (data.message === "Done") {
+        setTags(data.details.map((_) => {
+          return {
+            key: _.tag_key,
+            values: _.tag_options,
+            default: _.tag_default_value,
+            type: _.tag_type
+          }
+        }))
+      }
+
+    } catch (err: any) {
+      console.log(err)
+    }
+  }
+
+  const handleTagsAdd = () => {
+    setSelectedTags([...selectedTags, { key: tags[0].key, value: tags[0].default }])
+  }
+
+  const handleTagDefault = (key: string) => {
+    let filteredTags = tags.filter(tag => tag.key === key);
+    if (filteredTags.length) return filteredTags[0].default;
+    else return '';
+  }
+
+  const handleTagOptions = (key: string): string[] => {
+    let filteredTags = tags.filter(tag => tag.key === key);
+    if (filteredTags.length) return filteredTags[0].values as string[];
+    else return [];
+  }
+
+  const handleTagType = (key: string): string => {
+    let filteredTags = tags.filter(tag => tag.key === key);
+    if (filteredTags.length) return filteredTags[0].type as string;
+    else return 'TEXT';
+  }
+
+  const handleSelectedTagKey = (key: string, index: number) => {
+    setSelectedTags(prevState => {
+      let _selectedTags = prevState;
+      _selectedTags[index].key = key;
+      _selectedTags[index].value = handleTagDefault(key);
+      return [..._selectedTags]
+    });
+  }
+
+  const handleSelectedTagValue = (value: string, index: number) => {
+    setSelectedTags(prevState => {
+      let _selectedTags = prevState;
+      _selectedTags[index].value = value;
+      return [..._selectedTags]
+    })
+  }
+
+  const handleSelectedTagDelete = (index: number) => {
+    setSelectedTags(prevState => {
+      let _selectedTags = prevState;
+      _selectedTags.splice(index, 1);
+      return [..._selectedTags]
+    })
+  }
+
   useEffect(() => {
+    handleTags();
     (async () => {
       if (assetId) {
         const { data } = await api.get(`/asset/${assetId}`, {
@@ -92,12 +169,34 @@ const NewAsset = ({
             Authorization: `Bearer ${localStorage.getItem("token")}`
           }
         });
+
         setAssetName(data.asset_name);
         setDescription(data.asset_description);
+
+
+        let { data: dataTag } = await api.post("/chaincode", {
+          action: Action.READ,
+          args: {
+            assetId: data.asset_uuid,
+            channelId
+          }
+        },
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          })
+
+        console.log(dataTag)
+
+        setSelectedTags(JSON.parse(dataTag.details.details.details.tags))
+
       } else {
         setAssetName("");
         setDescription("");
       }
+
+
     })();
   }, []);
 
@@ -113,18 +212,65 @@ const NewAsset = ({
           setAssetName(e.target.value);
         }}
       />
-      <TextareaIndex
-        disabled={action === "view" ? true : false}
-        value={description}
-        label="Description (Optional)"
-        handler={(e: any) => {
-          setDescription(e.target.value);
-        }}
-      />
-      {action !== "view" ? (
-        <ButtonIndex label={action === "update" ? "Update" : "Save"} />
-      ) : null}
-    </form>
+      {
+        action !== "view" ?
+          <h1 className="text-sm mb-2">Details</h1> : null
+      }
+      {
+        selectedTags.map((selectedTag, index) => {
+          console.log(selectedTag)
+          return <div key={`${selectedTag.type}-${index}`}>
+            <section className="grid grid-cols-2 pr-2">
+              {
+                action === "view"
+                  ? <label className="text-xs block mb-2">{selectedTag.key}</label>
+                  : <>
+                    <select required key={`${selectedTag.key}-${index}`} onChange={(e) => handleSelectedTagKey(e.target.value, index)} value={selectedTag.key} className="outline-none text-xs bg-white">
+                      {
+                        tags.map((tag: KeyValue, index: number) => {
+                          return <option key={`${selectedTag.key}-${index}`} value={tag.key}>{tag.key}</option>
+                        })
+                      }
+                    </select>
+                    <a href="#" className="justify-self-end" onClick={() => handleSelectedTagDelete(index)}>
+                      <FontAwesomeIcon icon={faTrash} size="xs" className="text-red-300" />
+                    </a>
+                  </>
+              }
+            </section>
+            {
+              handleTagType(selectedTag.key) === "OPTIONS" ?
+                <select disabled={action === "view" ? true : false} required onChange={(e) => handleSelectedTagValue(e.target.value, index)} value={selectedTag.value ? selectedTag.value : handleTagDefault(selectedTag.key)} className="outline-none block w-full border font-thin text-sm px-3 py-2 bg-white mb-2">
+                  {
+                    handleTagOptions(selectedTag.key).map((value: string) => {
+                      return <option key={`${selectedTag.key}-${index}-${value}`} value={value}>{value}</option>
+                    })
+                  }
+                </select>
+                : null
+            }
+            {
+              handleTagType(selectedTag.key) === "MULTITEXT" ?
+                <textarea disabled={action === "view" ? true : false} required rows={5} onChange={(e) => handleSelectedTagValue(e.target.value, index)} value={selectedTag.value ? selectedTag.value : ''} className="outline-none block w-full border font-thin text-sm px-3 py-2 mb-2" ></textarea> : null
+            }
+            {
+              ["PESO", "NUMBER", "TEXT", "QUANTITY", "DATE"].includes(handleTagType(selectedTag.key)) ?
+                <input disabled={action === "view" ? true : false} required type={handleTagType(selectedTag.key) === "DATE" ? "date" : "text"} onChange={(e) => handleSelectedTagValue(e.target.value, index)} value={selectedTag.value ? selectedTag.value : ''} className="outline-none block w-full border font-thin text-sm px-3 py-2 mb-2" /> : null
+            }
+          </div>
+        })
+      }
+      {
+        action !== "view" ?
+          <>
+            <span onClick={handleTagsAdd} className="block border-dashed border-slate-300 border rounded text-xs text-center py-3 text-slate-300 mb-4 mt-4" ><FontAwesomeIcon icon={faPlus} size="xs" /> Add Metadata</span>
+            {action !== "view" ? (
+              <ButtonIndex label={inSubmission ? '' : action === "update" ? "Update" : "Save"} Icon={inSubmission ? <FontAwesomeIcon className="animate-spin" icon={faSpinner} /> : null} />
+            ) : null}
+          </>
+          : null
+      }
+    </form >
   </>
   );
 };
@@ -156,14 +302,16 @@ const Asset = () => {
 
   const handleSearch = async (e: any) => {
     const value = e.target.value;
-    const { data } = await api.get(`/search/asset/${value ? value : "all"}`, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`
-      }
-    });
-    setAssets(data.asset);
+    // const { data } = await api.get(`/search/asset/${value ? value : "all"}`, {
+    //   headers: {
+    //     Authorization: `Bearer ${localStorage.getItem("token")}`
+    //   }
+    // });
+    // setAssets(data.asset);
     setSearchText(value);
   };
+
+
 
 
   useEffect(() => {
@@ -197,11 +345,11 @@ const Asset = () => {
   return (
     <main className="grid grid-cols-5 h-full">
       <NavbarIndex />
-      <div className="col-span-4">
+      <div className="col-span-5 sm:col-span-5 md:col-span-4">
         <HeaderbarIndex />
-        <section className="px-32 pt-20">
+        <section className="px-10 lg:px-28 md:px-20 sm:px-10 xl:px-24 pt-20">
           <h1 className="text-2xl mb-5">Manage Assets</h1>
-          <section className="grid grid-cols-4 items-center gap-x-4">
+          <section className="grid grid-cols-4 items-end gap-x-4">
             <InputIndex
               icon={<FontAwesomeIcon icon={faSearch} />}
               label="Search Asset"
@@ -210,10 +358,12 @@ const Asset = () => {
               value={searchText}
               handler={handleSearch}
             />
-            <ChannelIndex handleValue={(value) => setChannel(value)} />
-            <span></span>
+            <section className="col-span-2">
+              <label className="text-sm mb-2 block">Channels</label>
+              <ChannelIndex handleValue={(value) => setChannel(value)} />
+            </section>
             <button
-              className="border rounded py-2 px-3.5 hover:bg-gray-100 text-xs"
+              className="border rounded py-2 px-3.5 hover:bg-gray-100 text-xs mb-4"
               onClick={() => {
                 setAction("");
                 setIsModal(true);
@@ -232,27 +382,16 @@ const Asset = () => {
       {
         isAlert ? <AlertIndex content="Asset created" title="Success" type="success" handleClose={() => setIsAlert(false)} /> : null
       }
-
-      {/* {isAlert ? (
-          <AlertIndex
-
-            content="Are you sure to remove?"
-            handleClose={() => {
-              setToDelete("");
-              setIsAlert(false);
-            }}
-          />
-        ) : null} */}
       {isModal ? (
         <ModalIndex
           assetId={selectedAssetId}
           action={action}
           channelId={channel}
           Component={NewAsset}
-          handleClose={() => {
+          handleClose={(response: string) => {
             setSelectedAssetId("");
             setIsModal(false);
-            setIsAlert(true)
+            setIsAlert(response === 'returned' ? true : false);
           }}
         />
       ) : null}

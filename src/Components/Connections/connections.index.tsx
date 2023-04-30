@@ -256,20 +256,25 @@ const Connection = () => {
 
                 </Modal> : null
         }
-        <div className="col-span-4">
+        <div className="col-span-5 sm:col-span-5 md:col-span-4">
             <Headerbar />
-            <div className="p-10 pt-20 px-32 flex gap-x-2 justify-end">
-                <button onClick={() => handleInvites()} className="border rounded pb-2 pt-1 px-3 hover:bg-gray-100">
-                    <FontAwesomeIcon icon={faEnvelopeOpen} className="text-xs" />
-                </button>
-                <button onClick={() => handleInviteReceived()} className="border rounded pb-2 pt-1 px-3.5 hover:bg-gray-100">
-                    <FontAwesomeIcon icon={faArrowDown} className="text-xs" />
-                </button>
-                <button onClick={handleToggleInvite} className="border rounded pb-2 pt-1 px-3.5 hover:bg-gray-100">
-                    <FontAwesomeIcon icon={faPlus} className="text-xs" />
-                </button>
-            </div>
-            <div className="px-32">
+
+            <div className="px-10 pt-20 lg:px-44 md:px-20 sm:px-10 xl:px-24">
+                <h1 className="text-2xl mb-5">Connections</h1>
+                <div className="flex gap-x-2 justify-end mb-4">
+
+                    <button onClick={() => handleInvites()} className="border rounded pb-2 pt-1 px-3 hover:bg-gray-100">
+                        <FontAwesomeIcon icon={faEnvelopeOpen} className="text-xs" />
+                    </button>
+                    <button onClick={() => handleInviteReceived()} className="border rounded pb-2 pt-1 px-3.5 hover:bg-gray-100">
+                        <FontAwesomeIcon icon={faArrowDown} className="text-xs" />
+                    </button>
+                    <button onClick={handleToggleInvite} className="border rounded pb-2 pt-1 px-3.5 hover:bg-gray-100">
+                        <FontAwesomeIcon icon={faPlus} className="text-xs" />
+                    </button>
+                </div>
+
+
                 <table className="w-full border border-slate-100">
                     <thead className="bg-slate-100 text-sm text-slate-600">
                         <tr>

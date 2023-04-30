@@ -26,6 +26,7 @@ export default ({
         {icon && <div className="w-10 flex items-center justify-center bg-slate-200 text-slate-600">{icon}</div>}
 
         <input
+          required
           disabled={disabled}
           type={type}
           placeholder={placeholder}

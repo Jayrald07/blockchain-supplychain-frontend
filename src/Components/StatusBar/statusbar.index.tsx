@@ -17,7 +17,7 @@ export default () => {
 
     const handleStatus = async () => {
         try {
-            const { data } = await api.get("/ping");
+            const { data } = await api.get("/ping", { timeout: 5000 });
             if (data.message === "Done", data.details === "pong") setStatus(2);
             else setStatus(3);
         } catch (error: any) {
@@ -27,9 +27,11 @@ export default () => {
 
     useEffect(() => {
         handleStatus();
-        setInterval(() => {
+        let ping = setInterval(() => {
             handleStatus();
-        }, 5000);
+        }, 7000);
+
+        return () => clearInterval(ping)
     }, []);
 
 

@@ -23,13 +23,11 @@ export default ({ handleValue }: { handleValue: (channel: string) => void }) => 
   }, []);
 
   return <>
-    {/* <div className="absolute w-full h-screen left-0 top:0" style={{ background: "rgba(0,0,0,0.2)" }}></div> */}
     <div className="mb-4">
 
-      <label className="text-sm mb-2 block">Channels</label>
-      <select onChange={console.log} className="py-2 px-3 text-sm w-full font-light bg-white border-slate-200 border outline-none">
+      <select onChange={e => handleValue(e.target.value)} className="py-2 px-3 text-sm w-full font-light bg-white border-slate-200 border outline-none">
         {
-          channels.map(item => <option key={item}>{item}</option>)
+          channels.map(item => <option key={item} value={item}>{item}</option>)
         }
       </select></div>
   </>
