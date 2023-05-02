@@ -13,10 +13,10 @@ export default () => {
         </div>
       </div>
       {[
-        { type: "Retailer", name: "7-Eleven Manila" },
-        { type: "Distributor", name: "LBC Manila" },
-        { type: "Manufacturer", name: "Quing Ski Manufacturing" },
-        { type: "Supplier", name: "ElectriSource" },
+        { type: "Retailer", name: "MERCURY DRUG" },
+        { type: "Distributor", name: "CVK Pharma and Medical Supplies Distribution" },
+        { type: "Manufacturer", name: "Unilab, Inc." },
+        { type: "Supplier", name: "RHYLEX PHARMACEUTICAL" },
       ].map((item) => {
         return (
           <div key={item.type} className="flex gap-x-2 mb-11 relative">

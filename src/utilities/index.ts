@@ -10,7 +10,9 @@ export enum Action {
     LOGS = 'LOGS',
     TRANSACTIONS = 'READ_COLLECTION',
     TRANSFER = 'TRANSFER',
-    ACCEPT = 'ACCEPT'
+    ACCEPT = 'ACCEPT',
+    TRANSFER_NOW = 'TRANSFER_NOW',
+    OWN_ASSET = 'OWN_ASSET'
 }
 
 export interface HttpResposne {

@@ -1,61 +1,22 @@
-import { ReactNode, useEffect, useRef, useState } from "react"
-import AlertIndex from "../Alert/alert.index"
+import { useEffect, useRef, useState } from "react"
 import AuthIndex from "../Auth/auth.index"
 import ChannelIndex from "../Channel/channel.index"
 import Headerbar from "../HeaderBar/headerbar.index"
 import Navbar from "../Navbar/navbar.index"
-import axios from "axios"
-import { Action, host, port, validateAndReturn } from "../../utilities"
-import ButtonIndex from "../Button/button.index"
+import { Action, validateAndReturn } from "../../utilities"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { faPlane, faPlus } from "@fortawesome/free-solid-svg-icons"
+import { faPlus, faSpinner } from "@fortawesome/free-solid-svg-icons"
 import { Modal } from "../Modalv2/modal.index"
 import { HttpMethod, api as globalApi } from "../../services/http";
 
 
-interface IStepper {
-    label: string,
-    Component: ReactNode
-}
-
-const api = axios.create({ baseURL: `${host}:${port}` });
-
-const Stepper = ({ steps }: { steps: IStepper[] }) => {
-
-    const [steppers, setSteppers] = useState(steps);
-
-
-    return <div>
-        <div className="flex mb-5 gap-x-4 justify-around">
-            {
-                steppers.map((step, index) => {
-                    return <section className="flex flex-col items-center">
-                        <span className="rounded-full bg-slate-600 w-6 h-6 flex items-center justify-center text-center mb-2 text-white text-xs">{index + 1}</span>
-                        <span className="text-xs">{step.label}</span>
-                    </section>
-                })
-            }
-        </div>
-        <h1>Oks</h1>
-    </div>
-}
-
-const TransferForm = ({ channelId }: { channelId: string }) => {
+const TransferForm = ({ channelId, toggleModal }: { channelId: string, toggleModal: () => void }) => {
 
     const [assets, setAssets] = useState([]);
     const [queueAssets, setQueueAssets] = useState<string[]>([]);
     const tbodyRowRef = useRef(null);
     const allCheckboxRef = useRef(null);
     const [specificAsset, setSpecificAsset] = useState<any>(null);
-
-    const data = [
-        { label: 'Prepare Assets', Component: <h1>Prepare</h1> },
-        { label: 'Transfer To', Component: <h1>Transfer</h1> },
-        { label: 'Accept', Component: <h1>Accept</h1> },
-        { label: 'Change Ownership', Component: <h1>Accept</h1> },
-        { label: 'Own', Component: <h1>Accept</h1> },
-    ]
-
 
     const handleAllCheckbox = (e: any) => {
         if (e.target.checked) {
@@ -102,7 +63,9 @@ const TransferForm = ({ channelId }: { channelId: string }) => {
                     newOwnerMSP: "empinomanufacturerMSP"
                 }
             })
-            console.log(data);
+            const response = validateAndReturn(data);
+            if (response.includes("created")) toggleModal();
+
         }
     }
 
@@ -124,6 +87,7 @@ const TransferForm = ({ channelId }: { channelId: string }) => {
         }
 
     }
+
     useEffect(() => {
         (async () => {
             let data = await globalApi("/chaincode", HttpMethod.POST, {
@@ -190,12 +154,15 @@ const TransferForm = ({ channelId }: { channelId: string }) => {
 
 
 
-const TransactionDetails = ({ transaction, channelId }: { transaction: any, channelId: string }) => {
+const TransactionDetails = ({ transaction, channelId, toggleModal }: { transaction: any, channelId: string, toggleModal: () => void }) => {
     const [_transaction, setTransaction] = useState<any>(null);
+    const [isLoadingAccept, setIsLoadingAccept] = useState(false);
+    const [isLoadingTransfer, setIsLoadingTransfer] = useState(false);
+    const [isLoadingOwn, setIsLoadingOwn] = useState(false);
 
 
     const handleAcceptAsset = async (transactionId: string) => {
-
+        setIsLoadingAccept(true)
 
         const data = await globalApi("/chaincode", HttpMethod.POST, {
             action: Action.ACCEPT,
@@ -209,8 +176,52 @@ const TransactionDetails = ({ transaction, channelId }: { transaction: any, chan
 
         let response = JSON.parse(cleaned);
 
-        console.log(response)
+        if (response.message === "Done") toggleModal();
 
+        setIsLoadingAccept(false)
+
+
+    }
+
+    const handleTransferAsset = async (transactionId: string) => {
+        setIsLoadingTransfer(true);
+        const data = await globalApi("/chaincode", HttpMethod.POST, {
+            action: Action.TRANSFER_NOW,
+            args: {
+                transactionId,
+                channelId
+            }
+        })
+
+        const cleaned = validateAndReturn(data);
+
+        let response = JSON.parse(cleaned);
+
+        console.log({ response })
+
+        if (response.message === "Done") toggleModal();
+
+        setIsLoadingTransfer(false)
+    }
+
+    const handleOwnAsset = async (transactionId: string) => {
+        setIsLoadingOwn(true);
+        const data = await globalApi("/chaincode", HttpMethod.POST, {
+            action: Action.OWN_ASSET,
+            args: {
+                transactionId,
+                channelId
+            }
+        })
+
+        const cleaned = validateAndReturn(data);
+
+        let response = JSON.parse(cleaned);
+
+        console.log({ response })
+
+        if (response.message === "Done") toggleModal()
+        setIsLoadingOwn(false)
     }
 
     useEffect(() => {
@@ -269,17 +280,46 @@ const TransactionDetails = ({ transaction, channelId }: { transaction: any, chan
                 </tbody>
             </table>
             {
+                _transaction ? _transaction.isNewOwnerAccepted && _transaction.isCurrentOwnerApproved
+                    ? <button className="bg-green-400 w-full rounded p-1 text-center text-sm" onClick={() => handleOwnAsset(_transaction.id)}>
+
+                        {
+                            isLoadingOwn
+                                ?
+                                <FontAwesomeIcon icon={faSpinner} className="animate-spin" size="sm" />
+                                : 'Own Asset'
+                        }
+
+                    </button>
+                    : null : null
+            }
+            {
                 _transaction ? _transaction.isNewOwnerAccepted && !_transaction.isCurrentOwnerApproved
-                    ? <button className="bg-green-400 w-full rounded p-1 text-center text-sm">Transfer Now</button>
+                    ? <button className="bg-green-400 w-full rounded p-1 text-center text-sm" onClick={() => handleTransferAsset(_transaction.id)}>
+                        {
+                            isLoadingTransfer
+                                ?
+                                <FontAwesomeIcon icon={faSpinner} className="animate-spin" size="sm" />
+                                : 'Transfer Now'
+                        }
+                    </button>
                     : null : null
             }
             {
                 _transaction ? !_transaction.isNewOwnerAccepted
-                    ? <button className="bg-green-400 w-full rounded p-1 text-center text-sm" onClick={() => handleAcceptAsset(_transaction.id)}>Accept</button>
+                    ? <>
+                        <button className="bg-green-400 w-full rounded p-1 text-center text-sm mb-2" onClick={() => handleAcceptAsset(_transaction.id)}>{
+                            isLoadingAccept
+                                ?
+                                <FontAwesomeIcon icon={faSpinner} className="animate-spin" size="sm" />
+                                : 'Accept'
+                        }</button>
+                        <button className="border w-full rounded p-1 text-center text-sm">Reject</button>
+                    </>
                     : null : null
             }
 
-        </div>
+        </div >
     )
 
 }
@@ -291,17 +331,7 @@ const Transfer = () => {
     const [isViewDetails, setIsViewDetails] = useState(false);
     const [selectedTransaction, setSelectedTransaction] = useState({});
 
-
-    const toggleCreateNewModal = () => {
-        setIsCreateNew(!isCreateNew);
-    }
-    const toggleViewDtailsModal = (transactionId: string) => {
-        let filteredTransaction = transactions.filter((transaction: any) => transaction.id === transactionId);
-        setSelectedTransaction(filteredTransaction);
-        setIsViewDetails(!isViewDetails);
-    }
-
-    useEffect(() => {
+    const handleTransactions = () => {
         if (channel.trim()) {
             (async () => {
                 const data = await globalApi("/chaincode", HttpMethod.POST, {
@@ -314,6 +344,27 @@ const Transfer = () => {
                 setTransactions(validateAndReturn(data))
             })();
         }
+    }
+
+    const toggleCreateNewModal = () => {
+        setIsCreateNew(!isCreateNew);
+        handleTransactions()
+    }
+
+    const handleToggleModalDetails = () => {
+        setIsViewDetails(!isViewDetails);
+        handleTransactions()
+    }
+
+    const toggleViewDtailsModal = (transactionId: string) => {
+        handleTransactions();
+        let filteredTransaction = transactions.filter((transaction: any) => transaction.id === transactionId);
+        setSelectedTransaction(filteredTransaction);
+        handleToggleModalDetails();
+    }
+
+    useEffect(() => {
+        handleTransactions()
     }, [channel]);
 
     return <div className="grid grid-cols-5 h-full">
@@ -337,13 +388,13 @@ const Transfer = () => {
                 {
                     isViewDetails
                         ?
-                        <Modal children={<TransactionDetails transaction={selectedTransaction} channelId={channel} />} title="Details" toggleModal={toggleViewDtailsModal} />
+                        <Modal children={<TransactionDetails transaction={selectedTransaction} channelId={channel} toggleModal={handleToggleModalDetails} />} title="Details" toggleModal={toggleViewDtailsModal} />
                         : null
                 }
                 {
                     isCreateNew
                         ?
-                        <Modal children={<TransferForm channelId={channel} />} title="Transfer Assets" toggleModal={toggleCreateNewModal} />
+                        <Modal children={<TransferForm channelId={channel} toggleModal={toggleCreateNewModal} />} title="Transfer Assets" toggleModal={toggleCreateNewModal} />
                         : null
                 }
                 <label className="text-sm mb-2 block">Transfers</label>
@@ -364,7 +415,13 @@ const Transfer = () => {
                                         <td>
                                             <span className={`${transaction.isNewOwnerAccepted ? 'bg-gray-200' : 'bg-orange-200'} p-1 rounded`}>
                                                 {
-                                                    transaction.isNewOwnerAccepted ? "For Owner Approval" : "For Acceptance"
+                                                    transaction.isNewOwnerAccepted && transaction.isCurrentOwnerApproved ? "For own" : null
+                                                }
+                                                {
+                                                    !transaction.isNewOwnerAccepted && !transaction.isCurrentOwnerApproved ? "For Acceptance" : null
+                                                }
+                                                {
+                                                    transaction.isNewOwnerAccepted && !transaction.isCurrentOwnerApproved ? "For owner approval" : null
                                                 }
                                             </span>
                                         </td>

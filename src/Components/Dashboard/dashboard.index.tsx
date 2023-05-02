@@ -13,12 +13,18 @@ import axios from "axios";
 import { host, port } from "../../utilities";
 import Auth from "../Auth/auth.index";
 import Chart from "chart.js/auto";
+import ChannelIndex from "../Channel/channel.index";
 
 const Dashboard = () => {
   const [assetCount, setAssetCount] = useState(0);
   const ctxRef = useRef(null);
+  const [channelId, setChannelId] = useState("")
 
   const api = axios.create({ baseURL: `${host}:${port}` });
+
+  const handleChannelId = (channelId: string) => {
+    setChannelId(channelId);
+  }
 
   useEffect(() => {
     (async () => {
@@ -60,7 +66,13 @@ const Dashboard = () => {
       <Navbar />
       <section className="col-span-5 sm:col-span-5 md:col-span-4">
         <Headerbar />
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 px-10 lg:px-32 md:px-20 sm:px-10 xl:px-20 py-20 gap-5 mb-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 px-10 lg:px-32 md:px-20 sm:px-10 xl:px-20 pt-20 gap-5 mb-5">
+          <div className="block w-full">
+            <label className="text-sm block w-full mb-2">Channels</label>
+            <ChannelIndex handleValue={handleChannelId} />
+          </div>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 px-10 lg:px-32 md:px-20 sm:px-10 xl:px-20 gap-5 mb-5">
           <DashboardCard
             label1="Organization Units"
             label2="1"
@@ -82,9 +94,6 @@ const Dashboard = () => {
             icon={<FontAwesomeIcon icon={faEnvelope} className="w-full" />}
           />
         </div>
-        {/* <section className="px-20">
-          <canvas ref={ctxRef}></canvas>
-        </section> */}
       </section>
     </div>
   )
