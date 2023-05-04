@@ -41,7 +41,7 @@ export default () => {
           <img src={Logo} className="w-52 mb-10" />
           <div className="self-center bg-white border border-slate-200 rounded p-5 shadow-md">
             <Form handleResponse={handleResponse}>
-              <Button label="Login" icon={<FontAwesomeIcon icon={faSignIn} />} />
+              <Button label="Login" Icon={<FontAwesomeIcon icon={faSignIn} className="mr-2" />} />
             </Form>
             <section className="flex flex-col items-end text-xs font-light">
               <label className="font-normal">Haven't connected your server yet?</label>

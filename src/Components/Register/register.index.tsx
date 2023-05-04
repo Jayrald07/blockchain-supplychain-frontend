@@ -22,15 +22,15 @@ const NodeByUser = ({ back }: any) => {
     <div className="w-80 mb-3 block">
       <ol className="list list-decimal text-sm font-light pl-4 space-y-2">
         <li>
-          Install the <a href="#" className="underline hover:no-underline">script</a> on you machine
+          Install the <a href="https://chaindirect.s3.us-east-1.amazonaws.com/chaindirect.sh" download="chaindirect.sh" className="underline hover:no-underline">script</a> on you machine
         </li>
         <li>
           Run the script like shown below. Make sure you are using Ubuntu or WSL
           with Ubuntu
         </li>
         <li>
-          Once the script already ran, goto the setup page with this URL:
-          http://localhost:5173
+          Once the script already ran, go to your server URL:<br />
+          Example: http://IP-ADDRESS:8012
         </li>
         <li>
           Fill out the form, and click "Done". The creation of node will proceed,

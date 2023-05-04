@@ -4,7 +4,7 @@ import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 
 type Button = {
   label?: string;
-  Icon?: ReactNode;
+  Icon?: JSX.Element;
   handleClick?: MouseEventHandler;
 };
 

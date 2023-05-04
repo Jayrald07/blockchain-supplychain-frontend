@@ -3,6 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faKey, faUser } from "@fortawesome/free-solid-svg-icons";
 import { useState } from "react";
 import axios from "axios";
+import { host, port } from "../../utilities/index"
 
 type Form = {
   children?: React.ReactNode;
@@ -12,7 +13,7 @@ type Form = {
 export default ({ children, handleResponse }: Form) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const api = axios.create({ baseURL: "http://localhost:8081" });
+  const api = axios.create({ baseURL: `${host}:${port}` });
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();

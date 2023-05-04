@@ -8,6 +8,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faPlus, faSpinner } from "@fortawesome/free-solid-svg-icons"
 import { Modal } from "../Modalv2/modal.index"
 import { HttpMethod, api as globalApi } from "../../services/http";
+import { useNavigate } from "react-router-dom"
 
 
 const TransferForm = ({ channelId, toggleModal }: { channelId: string, toggleModal: () => void }) => {
@@ -330,6 +331,7 @@ const Transfer = () => {
     const [isCreateNew, setIsCreateNew] = useState(false);
     const [isViewDetails, setIsViewDetails] = useState(false);
     const [selectedTransaction, setSelectedTransaction] = useState({});
+    const navigate = useNavigate();
 
     const handleTransactions = () => {
         if (channel.trim()) {
@@ -363,6 +365,10 @@ const Transfer = () => {
         handleToggleModalDetails();
     }
 
+    const handleRedirectConnection = () => {
+        navigate("/connections")
+    }
+
     useEffect(() => {
         handleTransactions()
     }, [channel]);
@@ -372,68 +378,82 @@ const Transfer = () => {
         <div className="col-span-5 sm:col-span-5 md:col-span-4">
             <Headerbar />
             <div className="px-10 lg:px-24 md:px-20 sm:px-10 xl:px-24 py-20">
-                <h1 className="text-2xl mb-5">Transfers</h1>
+                {
+                    channel.trim()
+                        ? <>
+                            <h1 className="text-2xl mb-5">Transfers</h1>
 
-                <div className="grid grid-cols-4 items-center">
-                    <div className="col-span-2">
-                        <label className="text-sm mb-2 block">Channels</label>
-                        <ChannelIndex handleValue={setChannel} />
-                    </div>
-                    <div className="col-start-4 flex justify-end">
-                        <button className="border py-2 px-4 rounded" onClick={toggleCreateNewModal}>
-                            <FontAwesomeIcon icon={faPlus} size="sm" />
-                        </button>
-                    </div>
-                </div>
-                {
-                    isViewDetails
-                        ?
-                        <Modal children={<TransactionDetails transaction={selectedTransaction} channelId={channel} toggleModal={handleToggleModalDetails} />} title="Details" toggleModal={toggleViewDtailsModal} />
-                        : null
-                }
-                {
-                    isCreateNew
-                        ?
-                        <Modal children={<TransferForm channelId={channel} toggleModal={toggleCreateNewModal} />} title="Transfer Assets" toggleModal={toggleCreateNewModal} />
-                        : null
-                }
-                <label className="text-sm mb-2 block">Transfers</label>
-                <table className="w-full border border-slate-100 text-left">
-                    <thead className="bg-slate-100 text-sm text-slate-600">
-                        <tr>
-                            <th className="p-2">Transaction ID</th>
-                            <th>Status</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody className="text-sm font-thin text-left">
-                        {
-                            transactions.map((transaction: any) => {
-                                return (
-                                    <tr key={transaction.id} className="hover:bg-slate-50 border-b-slate-100 text-left">
-                                        <td className="py-2 px-2 pr-4 text-left">{transaction.id}</td>
-                                        <td>
-                                            <span className={`${transaction.isNewOwnerAccepted ? 'bg-gray-200' : 'bg-orange-200'} p-1 rounded`}>
-                                                {
-                                                    transaction.isNewOwnerAccepted && transaction.isCurrentOwnerApproved ? "For own" : null
-                                                }
-                                                {
-                                                    !transaction.isNewOwnerAccepted && !transaction.isCurrentOwnerApproved ? "For Acceptance" : null
-                                                }
-                                                {
-                                                    transaction.isNewOwnerAccepted && !transaction.isCurrentOwnerApproved ? "For owner approval" : null
-                                                }
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <a href="#" className="underline hover:no-underline" onClick={() => toggleViewDtailsModal(transaction.id)}>View details</a>
-                                        </td>
+                            <div className="grid grid-cols-4 items-center">
+                                <div className="col-span-2">
+                                    <label className="text-sm mb-2 block">Channels</label>
+                                    <ChannelIndex handleValue={setChannel} />
+                                </div>
+                                <div className="col-start-4 flex justify-end">
+                                    <button className="border py-2 px-4 rounded" onClick={toggleCreateNewModal}>
+                                        <FontAwesomeIcon icon={faPlus} size="sm" />
+                                    </button>
+                                </div>
+                            </div>
+                            {
+                                isViewDetails
+                                    ?
+                                    <Modal children={<TransactionDetails transaction={selectedTransaction} channelId={channel} toggleModal={handleToggleModalDetails} />} title="Details" toggleModal={toggleViewDtailsModal} />
+                                    : null
+                            }
+                            {
+                                isCreateNew
+                                    ?
+                                    <Modal children={<TransferForm channelId={channel} toggleModal={toggleCreateNewModal} />} title="Transfer Assets" toggleModal={toggleCreateNewModal} />
+                                    : null
+                            }
+                            <label className="text-sm mb-2 block">Transfers</label>
+                            <table className="w-full border border-slate-100 text-left">
+                                <thead className="bg-slate-100 text-sm text-slate-600">
+                                    <tr>
+                                        <th className="p-2">Transaction ID</th>
+                                        <th>Status</th>
+                                        <th>Action</th>
                                     </tr>
-                                )
-                            })
-                        }
-                    </tbody>
-                </table>
+                                </thead>
+                                <tbody className="text-sm font-thin text-left">
+                                    {
+                                        transactions.map((transaction: any) => {
+                                            return (
+                                                <tr key={transaction.id} className="hover:bg-slate-50 border-b-slate-100 text-left">
+                                                    <td className="py-2 px-2 pr-4 text-left">{transaction.id}</td>
+                                                    <td>
+                                                        <span className={`${transaction.isNewOwnerAccepted ? 'bg-gray-200' : 'bg-orange-200'} p-1 rounded`}>
+                                                            {
+                                                                transaction.isNewOwnerAccepted && transaction.isCurrentOwnerApproved ? "For own" : null
+                                                            }
+                                                            {
+                                                                !transaction.isNewOwnerAccepted && !transaction.isCurrentOwnerApproved ? "For Acceptance" : null
+                                                            }
+                                                            {
+                                                                transaction.isNewOwnerAccepted && !transaction.isCurrentOwnerApproved ? "For owner approval" : null
+                                                            }
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <a href="#" className="underline hover:no-underline" onClick={() => toggleViewDtailsModal(transaction.id)}>View details</a>
+                                                    </td>
+                                                </tr>
+                                            )
+                                        })
+                                    }
+                                </tbody>
+                            </table>
+                        </>
+                        :
+                        <div className="text-center grid ">
+                            <h1>You don't have any connections to other organizations.</h1>
+                            <small className="font-light block mb-3">Please connect to atleast 1 organization to show this page.</small>
+                            <button className="border rounded text-xs p-2 px-4 justify-self-center hover:bg-slate-100" onClick={handleRedirectConnection}>Create connection</button>
+                        </div>
+                }
+
+
+
             </div>
         </div>
     </div>

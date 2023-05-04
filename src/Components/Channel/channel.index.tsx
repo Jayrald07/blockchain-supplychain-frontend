@@ -13,8 +13,8 @@ export default ({ handleValue }: { handleValue: (channel: string) => void }) => 
           Authorization: `Bearer ${localStorage.getItem("token")}`
         }
       });
-
-      if (data.message === 'Done') {
+      console.log(data)
+      if (data.message === 'Done' && data.details !== '') {
         setChannels(data.details.message);
         handleValue(data.details.message.length ? data.details.message[0] : '');
       } else setChannels(['Cannot be fetched']);

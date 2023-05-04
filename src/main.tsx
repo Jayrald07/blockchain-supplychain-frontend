@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
 import Test from "./test";
@@ -18,15 +18,18 @@ import TransfersIndex from "./Components/Transfers/transfers.index";
 import TransactionsIndex from "./Components/Transactions/transactions.index";
 import SettingsIndex from "./Components/Settings/settings.index";
 
+const Redire = () => {
+  useEffect(() => {
+    location.href = "/login"
+  })
+
+  return <></>
+}
+
 const router = createBrowserRouter([
   {
     path: "/",
-    element: (
-      <>
-        <h1>Notice</h1>
-        <p>This will be used for validation of current user's session</p>
-      </>
-    ),
+    element: <Redire />,
     errorElement: (
       <div
         style={{
