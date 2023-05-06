@@ -4,7 +4,7 @@ import ProvenanceIndex from "../Provenance/provenance.index";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronLeft, faRedo } from "@fortawesome/free-solid-svg-icons";
 import "./scanqr.index.css";
-
+import Logo from "../../assets/logo.png"
 
 export default () => {
   let html5qr: any = useRef(null);
@@ -44,7 +44,11 @@ export default () => {
           isScanned ?
             <ProvenanceIndex />
             :
-            <div id="qr-scan" className="relative w-96"></div>
+            <div className="grid">
+              <img src={Logo} className="w-44 mb-10 justify-self-center" />
+
+              <div id="qr-scan" className="relative w-96"></div>
+            </div>
         }
       </section>
       <section className={`grid ${isScanned ? 'grid-cols-2' : ''} w-full text-center bg-slate-200`}>

@@ -31,6 +31,12 @@ export default ({
           </tr>
         </thead>
         <tbody className="text-sm font-thin">
+          {
+            !rows.length
+              ? <tr className="hover:bg-slate-50 border-b border-b-slate-100">
+                <td className="p-2 text-center" colSpan={5}>No Assets</td>
+              </tr> : null
+          }
           {rows?.map((item: any) => {
             return (
               <tr key={item.asset_uuid} className="hover:bg-slate-50 border-b-slate-100">

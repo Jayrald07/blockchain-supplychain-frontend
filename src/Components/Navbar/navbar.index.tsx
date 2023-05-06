@@ -10,6 +10,7 @@ import {
   faArrowRight,
   faChain,
   faCog,
+  faBars,
 } from "@fortawesome/free-solid-svg-icons";
 import Logo from "../../assets/logo.png";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -26,6 +27,7 @@ export default () => {
   const logout: any = useRef(null);
   const location = useLocation();
   const navigate = useNavigate();
+  const [isSideOpen, setIsSideOpen] = useState(false);
 
 
   const [isNavOpen, setIsNavOpen] = useState(true);
@@ -66,54 +68,70 @@ export default () => {
     setIsNavOpen(!isNavOpen);
   };
 
+  const handleSidebarToggle = (e: any) => {
+    e.stopPropagation();
+    let toggle = !isSideOpen;
+    setIsSideOpen(toggle);
+  }
+
+  const handleBackClick = (e: any) => {
+    handleSidebarToggle(e)
+  }
+
   useEffect(() => { }, [isNavOpen]);
 
   return (
-    <nav className="h-full bg-slate-700 md:grid sm:hidden hidden" ref={navbar}>
-      <ol>
-        {/* <li ref={firstList}>
+    <div className={`navbar-container fixed ${isSideOpen ? 'w-full' : ''} h-full`} onClick={handleBackClick}>
+      <div className={`${isSideOpen ? 'left-48' : 'left-0'} ${isSideOpen ? '' : 'rounded-tl-none rounded-bl-none border-l-0'} absolute z-50 bg-white border rounded shadow-md block top-20 text-sm p-2 px-3 cursor-pointer hover:bg-slate-100`} onClick={handleSidebarToggle}>
+        <FontAwesomeIcon icon={faBars} size="sm" />
+      </div>
+      <nav onClick={(e) => e.stopPropagation()} className={`fixed h-full shadow-xl ${isSideOpen ? '' : 'hidden'} ${isSideOpen ? 'shadow-xl' : ''} overflow-x-hidden bg-slate-700 md:grid ${isSideOpen ? '' : 'sm:hidden'}`} ref={navbar}>
+        <ol>
+          {/* <li ref={firstList}>
           <img src={Logo} draggable="false" />
           <span>ChainDirect</span>
           <a href="#" ref={toggler} onClick={handleToggler}>
             <FontAwesomeIcon icon={faChevronLeft} />
           </a>
         </li> */}
-        <li>
-          <a className='p-5 py-4 text-white flex gap-x-4 items-center text-center justify-center bg-slate-50' href="#" ref={dashboard}>
-            <img src={Logo} draggable="false" className="w-32" />
-          </a>
-        </li>
-        <li>
-          <a className={`p-5 text-white flex gap-x-4 items-center ${location.pathname === "/dashboard" ? 'bg-slate-600' : ''} hover:bg-slate-600`} href="#" onClick={() => navigate("/dashboard")} ref={dashboard}>
-            <FontAwesomeIcon icon={faTableColumns} /> <span>Dashboard</span>
-          </a>
-        </li>
-        <li>
-          <a className={`p-5 text-white flex gap-x-4 items-center ${location.pathname === "/asset" ? 'bg-slate-600' : ''} hover:bg-slate-600`} href="#" onClick={() => navigate("/asset")} ref={asset}>
-            <FontAwesomeIcon icon={faDatabase} /> <span>Manage Assets</span>
-          </a>
-        </li>
-        <li>
-          <a className={`p-5 text-white flex gap-x-4 items-center ${location.pathname === "/transfer" ? 'bg-slate-600' : ''} hover:bg-slate-600`} href="#" onClick={() => navigate("/transfer")} ref={transfer}>
-            <FontAwesomeIcon icon={faArrowRight} /> <span>Transfers</span>
-          </a>
-        </li>
-        <li>
-          <a className={`p-5 text-white flex gap-x-4 items-center ${location.pathname === "/transaction" ? 'bg-slate-600' : ''} hover:bg-slate-600`} href="#" onClick={() => navigate("/transaction")} ref={transaction}>
-            <FontAwesomeIcon icon={faChartLine} /> <span>Transactions</span>
-          </a>
-        </li>
-        <li>
-          <a className={`p-5 text-white flex gap-x-4 items-center ${location.pathname === "/connections" ? 'bg-slate-600' : ''} hover:bg-slate-600`} href="#" onClick={() => navigate("/connections")} ref={connections}>
-            <FontAwesomeIcon icon={faChain} /> <span>Connections</span>
-          </a>
-        </li>
-        <li>
-          <a className={`p-5 text-white flex gap-x-4 items-center ${location.pathname === "/settings" ? 'bg-slate-600' : ''} hover:bg-slate-600`} href="#" onClick={() => navigate("/settings")} ref={connections}>
-            <FontAwesomeIcon icon={faCog} /> <span>Settings</span>
-          </a>
-        </li>
-      </ol>
-    </nav>
+          <li>
+            <a className='p-5 py-4 text-white flex gap-x-4 items-center text-center justify-center bg-slate-50' href="#" ref={dashboard}>
+              <img src={Logo} draggable="false" className="w-32" />
+            </a>
+          </li>
+          <li>
+            <a className={`p-5 text-white flex gap-x-4 items-center ${location.pathname === "/dashboard" ? 'bg-slate-600' : ''} hover:bg-slate-600`} href="#" onClick={() => navigate("/dashboard")} ref={dashboard}>
+              <FontAwesomeIcon icon={faTableColumns} /> <span>Dashboard</span>
+            </a>
+          </li>
+          <li>
+            <a className={`p-5 text-white flex gap-x-4 items-center ${location.pathname === "/asset" ? 'bg-slate-600' : ''} hover:bg-slate-600`} href="#" onClick={() => navigate("/asset")} ref={asset}>
+              <FontAwesomeIcon icon={faDatabase} /> <span>Manage Assets</span>
+            </a>
+          </li>
+          <li>
+            <a className={`p-5 text-white flex gap-x-4 items-center ${location.pathname === "/transfer" ? 'bg-slate-600' : ''} hover:bg-slate-600`} href="#" onClick={() => navigate("/transfer")} ref={transfer}>
+              <FontAwesomeIcon icon={faArrowRight} /> <span>Transfers</span>
+            </a>
+          </li>
+          <li>
+            <a className={`p-5 text-white flex gap-x-4 items-center ${location.pathname === "/transaction" ? 'bg-slate-600' : ''} hover:bg-slate-600`} href="#" onClick={() => navigate("/transaction")} ref={transaction}>
+              <FontAwesomeIcon icon={faChartLine} /> <span>Transactions</span>
+            </a>
+          </li>
+          <li>
+            <a className={`p-5 text-white flex gap-x-4 items-center ${location.pathname === "/connections" ? 'bg-slate-600' : ''} hover:bg-slate-600`} href="#" onClick={() => navigate("/connections")} ref={connections}>
+              <FontAwesomeIcon icon={faChain} /> <span>Connections</span>
+            </a>
+          </li>
+          <li>
+            <a className={`p-5 text-white flex gap-x-4 items-center ${location.pathname === "/settings" ? 'bg-slate-600' : ''} hover:bg-slate-600`} href="#" onClick={() => navigate("/settings")} ref={connections}>
+              <FontAwesomeIcon icon={faCog} /> <span>Settings</span>
+            </a>
+          </li>
+        </ol>
+      </nav>
+    </div>
+
   );
 };

@@ -13,5 +13,12 @@ import mkcert from "vite-plugin-mkcert";
 // })
 export default defineConfig({
   plugins: [react()],
-  server: { port: 1234, host: true }
+  server: {
+    https: {
+      key: 'privkey.pem',
+      cert: 'fullchain.pem',
+    },
+    port: 443,
+    host: true
+  }
 })

@@ -18,3 +18,12 @@
   padding: 20px 30px;
   color: var(--dark-blue);
 }
+
+.notification-tab > a .notif-pop {
+  display: none;
+}
+
+.notification-tab > a:hover .notif-pop {
+  display: block;
+  position: absolute;
+}

@@ -294,6 +294,12 @@ export default () => {
           </thead>
           <tbody className="text-sm font-thin">
             {
+              !tags.length
+                ? <tr className="hover:bg-slate-50 border-b border-b-slate-100">
+                  <td className="p-2 text-center" colSpan={5}>No Metadata</td>
+                </tr> : null
+            }
+            {
               tags.map((tag: any, index: number) => {
                 return <tr key={tag.tag_key} className={`${tag.organization_id === "SYSTEM" ? "bg-slate-50" : ''} hover:bg-slate-50 border-b border-b-slate-100`}>
                   <td className="py-2 px-2">{tag.tag_key}</td>

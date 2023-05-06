@@ -17,6 +17,7 @@ import LogoutIndex from "./Components/Logout/logout.index";
 import TransfersIndex from "./Components/Transfers/transfers.index";
 import TransactionsIndex from "./Components/Transactions/transactions.index";
 import SettingsIndex from "./Components/Settings/settings.index";
+import EmailverificationIndex from "./Components/EmailVerification/emailverification.index";
 
 const Redire = () => {
   useEffect(() => {
@@ -109,6 +110,11 @@ const router = createBrowserRouter([
   {
     path: "/logout",
     element: <LogoutIndex />
+  }
+  ,
+  {
+    path: "/email-verification",
+    element: <EmailverificationIndex />
   }
 ]);
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(

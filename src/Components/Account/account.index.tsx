@@ -12,6 +12,8 @@ import { faEnvelope, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { Modal } from "../Modalv2/modal.index";
 import AlertIndex from "../Alert/alert.index";
 import PromptIndex from "../Prompt/prompt.index";
+import { Socket } from "socket.io-client";
+import useSocket from "../../hooks/useSocket";
 
 const Account = () => {
   const [username, setUsername] = useState("");
@@ -28,6 +30,12 @@ const Account = () => {
   const [promptContent, setPromptContent] = useState<{ question?: string, description?: string, buttons?: string[] }>();
   const [toHandle, setToHandle] = useState("");
   const [selectedInviteId, setSelectedInviteId] = useState("")
+  const socket: Socket | null = useSocket(`${host}:${port}`);
+  const [isSideOpen, setIsSideOpen] = useState(false);
+  const [email, setEmail] = useState("");
+  const [isEmailVerified, setIsEmailVerified] = useState(false);
+  const [emailStatus, setEmailStatus] = useState('LOADING');
+  const [emailRefer, setEmailRefer] = useState("");
 
   const api = axios.create({ baseURL: `${host}:${port}` });
 
@@ -44,6 +52,21 @@ const Account = () => {
         },
       }
     );
+
+    if (data.message === 'Done') setAlertContent({
+      title: 'Account updated',
+      content: data.details,
+      type: 'success'
+    })
+    else setAlertContent({
+      title: 'Error account update',
+      content: data.details,
+      type: 'error'
+    })
+
+
+    await handleAccountProfile();
+
   };
 
   const handleInvite = async (e: any) => {
@@ -107,6 +130,9 @@ const Account = () => {
         break;
       case 'REJECT':
         await handleReject(response);
+        break;
+      case 'SWITCH':
+        await handleSwitch(response);
         break;
 
       default:
@@ -264,21 +290,71 @@ const Account = () => {
     setPromptContent({});
   }
 
-  useEffect(() => {
-    (async () => {
-      const { data } = await api.get("/account", {
+  const handleSwitch = async (response: string) => {
+
+    if (response === 'Yes') {
+      const { data } = await api.post("/switchToOu", {
+        inviteOuId: selectedInviteId
+      }, {
         headers: {
           Authorization: `Basic ${localStorage.getItem("token")}`,
-        },
-      });
-      console.log(data)
-      if (data) {
-        setUsername(data.username);
-        setAddress(data.organization_address);
-        setPhone(data.organization_phone);
-        setType(data.organization_type_id.organization_type_name);
-        setOrganizationName(data.organization_name);
-      }
+        }
+      })
+
+      console.log({ data });
+    }
+
+  }
+
+  const handleEmailVerify = async (e: any) => {
+    e.preventDefault();
+
+    const { data } = await api.post("/sendEmailVerification", {
+      email
+    }, {
+      headers: {
+        Authorization: `Basic ${localStorage.getItem("token")}`,
+      },
+    });
+
+    if (data.message === "Error") setAlertContent({
+      title: 'Error sending email verification',
+      content: data.details,
+      type: 'error'
+    })
+    else setAlertContent({
+      title: 'Success sending email verification',
+      content: data.details,
+      type: 'success'
+    })
+
+    await handleAccountProfile();
+
+  }
+
+  const handleAccountProfile = async () => {
+    const { data } = await api.get("/account", {
+      headers: {
+        Authorization: `Basic ${localStorage.getItem("token")}`,
+      },
+    });
+    console.log(data)
+    if (data) {
+      setUsername(data.username);
+      setAddress(data.organization_address);
+      setPhone(data.organization_phone);
+      setType(data.organization_type_id.organization_type_name);
+      setOrganizationName(data.organization_name);
+      setEmail(data.organization_email)
+      setIsEmailVerified(data.organization_email_is_verified);
+      setEmailStatus(data.emailStatus || 'NONE')
+      setEmailRefer(data.organization_email)
+    }
+  }
+
+  useEffect(() => {
+    (async () => {
+      await handleAccountProfile();
 
       await handlePendings(false);
 
@@ -287,7 +363,22 @@ const Account = () => {
       await handleGetInviteOut()
 
     })();
+
   }, []);
+
+  useEffect(() => {
+    if (socket) {
+      socket
+        .on("account", async (data) => {
+          if (data.action === "refetch") {
+            handleGetInviteOut();
+            handlePendings(true);
+            handlePendings(false)
+            handleAccountProfile();
+          }
+        });
+    }
+  }, [socket]);
 
   return (
     <div className="grid grid-cols-5 h-full">
@@ -312,9 +403,9 @@ const Account = () => {
           </Modal> : null
       }
       <NavbarIndex />
-      <section className="col-span-5 sm:col-span-5 md:col-span-4">
+      <section className={`col-span-5 sm:col-span-5 md:col-span-5`}>
         <HeaderbarIndex />
-        <div className="px-10 lg:px-28 md:px-20 sm:px-10 xl:px-24 pt-20">
+        <div className="px-10 lg:px-28 md:px-20 sm:px-10 xl:px-24 pt-20 mb-10">
           <h1>
             Account / {organizationName} <small className="badge">{type}</small>
           </h1>
@@ -341,6 +432,27 @@ const Account = () => {
                 value={username}
                 handler={(e: any) => setUsername(e.target.value)}
               />
+              <div>
+                <form onSubmit={handleEmailVerify}>
+                  <InputIndex
+                    label="Email"
+                    type="email"
+                    value={email}
+                    handler={(e: any) => setEmail(e.target.value)}
+                  />
+                  {
+                    !isEmailVerified
+                      ? emailStatus === 'PENDING'
+                        ? <small className="bg-orange-600 rounded-md p-1 text-center text-white text-xs">Pending</small>
+                        : emailStatus === 'LOADING'
+                          ? null
+                          : <button className="border text-xs rounded bg-white p-1 px-3">Verify Email</button>
+                      : email === emailRefer
+                        ? <small className="bg-green-600 rounded-md p-1 text-center text-white text-xs">Verified</small>
+                        : <button className="border text-xs rounded bg-white p-1 px-3">Verify Email</button>
+                  }
+                </form>
+              </div>
               <ButtonIndex label="Save" handleClick={handleUpdate} />
             </div>
           </section>
@@ -361,12 +473,26 @@ const Account = () => {
             </thead>
             <tbody className="text-sm font-thin">
               {
+                !confirmedOu.length
+                  ? <tr className="hover:bg-slate-50 border-b-slate-100">
+                    <td colSpan={3} className="text-center p-2">No Organization Units</td>
+                  </tr> : null
+              }
+              {
                 confirmedOu.map((item: any) => {
                   return <tr key={item._id} className="hover:bg-slate-50 border-b-slate-100">
                     <td className="p-2">{item.organization_details_id.organization_name}</td>
                     <td>{item.organization_details_id.organization_type_id.organization_type_name}</td>
                     <td>
-                      <button className="p-1 px-2 text-xs rounded border mr-2">Switch</button>
+                      <button className="p-1 px-2 text-xs rounded border mr-2" onClick={() => {
+                        setPromptContent({
+                          question: 'Are you sure to switch?',
+                          description: 'This will transfer you to another account',
+                          buttons: ['Yes', 'No']
+                        })
+                        setToHandle('SWITCH')
+                        setSelectedInviteId(item._id)
+                      }}>Switch</button>
                       <button className="p-1 px-2 text-xs rounded border" onClick={() => {
                         setPromptContent({
                           question: 'Are you sure to remove?',
@@ -395,6 +521,12 @@ const Account = () => {
               </tr>
             </thead>
             <tbody className="text-sm font-thin">
+              {
+                !pendingOut.length
+                  ? <tr className="hover:bg-slate-50 border-b-slate-100">
+                    <td colSpan={3} className="text-center p-2">No Sent Invites</td>
+                  </tr> : null
+              }
               {
                 pendingOut.map((item: any) => {
                   console.log({ item })
@@ -430,6 +562,12 @@ const Account = () => {
               </tr>
             </thead>
             <tbody className="text-sm font-thin">
+              {
+                !receivedOu.length
+                  ? <tr className="hover:bg-slate-50 border-b-slate-100">
+                    <td colSpan={3} className="text-center p-2">No Received Units</td>
+                  </tr> : null
+              }
               {
                 receivedOu.map((item: any) => {
                   return <tr key={item._id} className="hover:bg-slate-50 border-b-slate-100">

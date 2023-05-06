@@ -12,6 +12,7 @@ import { faArrowDown, faChevronDown, faEnvelopeOpen, faPlus, faSpinner } from "@
 import { Modal } from "../Modalv2/modal.index"
 import moment from "moment"
 import AuthIndex from "../Auth/auth.index"
+import useSocket from "../../hooks/useSocket"
 
 const api = axios.create({
     baseURL: `${import.meta.env.VITE_BACKEND_API_HOST}:${import.meta.env.VITE_BACKEND_API_PORT}`,
@@ -27,36 +28,37 @@ const modalContents = [
 const Connection = () => {
     const [channelName, setChannelName] = useState("");
     const [organizations, setOrganizations] = useState([]);
-    const socket = useRef<Socket>();
     const [invitesReceived, setInvitesReceived] = useState([]);
     const [isModal, setIsModal] = useState(false);
     const [modalContentChoice, setModalContentChoice] = useState(0);
     const [connectedOrganizations, setConnectedOrganizations] = useState([]);
     const [tempLogs, setTempLogs] = useState<{ message: string, state: number }[]>([]);
+    const socket: Socket | null = useSocket(`${host}:${port}`);
 
     useEffect(() => {
-        socket.current = io(`${import.meta.env.VITE_BACKEND_API_HOST}:${import.meta.env.VITE_BACKEND_API_PORT}`, {
-            query: {
-                token: localStorage.getItem("token")
-            }
-        })
-            .on("channelInvite", (data) => {
-                console.log(data);
-            })
-            .on("p2p", data => {
-                setTempLogs((prevState) => {
-                    (async () => {
-                        if (data.state === 2) {
-                            const { data } = await api.get(`/invitesSent`);
-                            setInvitesReceived(data.details);
-                            getConnectedOrganizations();
-                        }
-                    })();
-                    return [...prevState, data];
-                })
-            })
         getConnectedOrganizations();
     }, []);
+
+    useEffect(() => {
+        if (socket) {
+            socket
+                .on("channelInvite", (data) => {
+                    console.log(data);
+                })
+                .on("p2p", data => {
+                    setTempLogs((prevState) => {
+                        (async () => {
+                            if (data.state === 2) {
+                                const { data } = await api.get(`/invitesSent`);
+                                setInvitesReceived(data.details);
+                                getConnectedOrganizations();
+                            }
+                        })();
+                        return [...prevState, data];
+                    })
+                })
+        }
+    }, [socket]);
 
     const getConnectedOrganizations = async () => {
         const { data } = await api.get('/connectedOrganizations');
@@ -181,7 +183,7 @@ const Connection = () => {
                                         invitesReceived.map((item: any) => (
                                             <tr key={item._id} className="hover:bg-slate-50 border-b-slate-100">
                                                 <td className="p-2">{item.organization_id.organization_name}</td>
-                                                <td>{item.organization_type_id}</td>
+                                                <td>{item.organization_id.organization_type_id.organization_type_name}</td>
                                                 <td className="flex gap-x-3 py-2">
 
                                                     {
@@ -220,7 +222,7 @@ const Connection = () => {
                                         invitesReceived.map((item: any) => (
                                             <tr key={item._id} className="hover:bg-slate-50 border-b-slate-100">
                                                 <td className="p-2">{item.invited_organization_id.organization_name}</td>
-                                                <td>{item.organization_type_id}</td>
+                                                <td>{item.invited_organization_id.organization_type_id.organization_type_name}</td>
                                                 <td>
                                                     {
                                                         item.status === "INVITED" ? <div className="flex items-center gap-x-2"><span className="relative flex h-3 w-3">
@@ -283,6 +285,12 @@ const Connection = () => {
                         </tr>
                     </thead>
                     <tbody className="text-sm font-thin">
+                        {
+                            !connectedOrganizations.length
+                                ? <tr className="hover:bg-slate-50 border-b-slate-100">
+                                    <td colSpan={3} className="p-2 text-center">No connections</td>
+                                </tr> : null
+                        }
                         {
                             connectedOrganizations.map((item: any) => {
                                 item = handleConnectedOrganizations(item);

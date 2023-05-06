@@ -4,10 +4,11 @@ import Card from "../Card/card.index";
 import Form from "../Form/form.index";
 import "./login.index.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSignIn, IconDefinition } from "@fortawesome/free-solid-svg-icons";
+import { faQrcode, faSignIn, IconDefinition } from "@fortawesome/free-solid-svg-icons";
 import useLocalstorageValidation from "../../hooks/useLocalstoragevalidation";
 import Logo from "../../assets/logo.png"
 import AlertIndex from "../Alert/alert.index";
+import { useNavigate } from "react-router-dom";
 
 export default () => {
 
@@ -15,6 +16,7 @@ export default () => {
   const [isModal, setIsModal] = useState(false)
   const [alertTitle, setAlertTitle] = useState("");
   const [alertContent, setAlertContent] = useState("");
+  const navigate = useNavigate();
 
   const handleResponse = (data: any) => {
     console.log(data)
@@ -39,7 +41,7 @@ export default () => {
         }
         <div className="w-full h-full flex justify-center items-center flex-col bg-slate-100">
           <img src={Logo} className="w-52 mb-10" />
-          <div className="self-center bg-white border border-slate-200 rounded p-5 shadow-md">
+          <div className="self-center bg-white border border-slate-200 rounded p-5 shadow-md mb-3">
             <Form handleResponse={handleResponse}>
               <Button label="Login" Icon={<FontAwesomeIcon icon={faSignIn} className="mr-2" />} />
             </Form>
@@ -47,6 +49,12 @@ export default () => {
               <label className="font-normal">Haven't connected your server yet?</label>
               <a href="/register" className="underline hover:no-underline">Connect it here</a>
             </section>
+          </div>
+          <div onClick={() => {
+            navigate("/scan")
+          }} className="bg-white border border-slate-200 rounded p-5 shadow-md flex items-center cursor-pointer">
+            <FontAwesomeIcon icon={faQrcode} />
+            <h1 className="text-sm ml-3">Scan QR</h1>
           </div>
         </div>
       </>
