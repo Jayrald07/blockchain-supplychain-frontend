@@ -387,12 +387,7 @@ const Account = () => {
           <PromptIndex question={promptContent.question as string} description={promptContent.description as string} buttons={promptContent.buttons as string[]} onClose={handleClosePrompt} handleClick={handlePromptResponse} />
           : null
       }
-      {
-        alertContent && Object.keys(alertContent).length
-          ?
-          <AlertIndex title={alertContent.title as string} content={alertContent.content as string} type={alertContent.type as string} handleClose={handleInviteClose} />
-          : null
-      }
+
       {
         isModal ?
           <Modal size="sm" title="Invite Organization" toggleModal={() => setIsModal(false)}>
@@ -401,6 +396,12 @@ const Account = () => {
               <button className="w-full p-1 border rounded text-sm">Invite</button>
             </form>
           </Modal> : null
+      }
+      {
+        alertContent && Object.keys(alertContent).length
+          ?
+          <AlertIndex title={alertContent.title as string} content={alertContent.content as string} type={alertContent.type as string} handleClose={handleInviteClose} />
+          : null
       }
       <NavbarIndex />
       <section className={`col-span-5 sm:col-span-5 md:col-span-5`}>
@@ -463,143 +464,147 @@ const Account = () => {
               <button className="border p-1 px-2 rounded text-sm font-light justify-self-end" onClick={() => setIsModal(true)}><FontAwesomeIcon icon={faPlus} size="sm" /> Add</button>
             </div>
           </div>
-          <table className="w-full border border-slate-100 mb-4">
-            <thead className="bg-slate-100 text-sm text-slate-600 text-left">
-              <tr>
-                <th className="p-2">Organization Name</th>
-                <th>Organization Type</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody className="text-sm font-thin">
-              {
-                !confirmedOu.length
-                  ? <tr className="hover:bg-slate-50 border-b-slate-100">
-                    <td colSpan={3} className="text-center p-2">No Organization Units</td>
-                  </tr> : null
-              }
-              {
-                confirmedOu.map((item: any) => {
-                  return <tr key={item._id} className="hover:bg-slate-50 border-b-slate-100">
-                    <td className="p-2">{item.organization_details_id.organization_name}</td>
-                    <td>{item.organization_details_id.organization_type_id.organization_type_name}</td>
-                    <td>
-                      <button className="p-1 px-2 text-xs rounded border mr-2" onClick={() => {
-                        setPromptContent({
-                          question: 'Are you sure to switch?',
-                          description: 'This will transfer you to another account',
-                          buttons: ['Yes', 'No']
-                        })
-                        setToHandle('SWITCH')
-                        setSelectedInviteId(item._id)
-                      }}>Switch</button>
-                      <button className="p-1 px-2 text-xs rounded border" onClick={() => {
-                        setPromptContent({
-                          question: 'Are you sure to remove?',
-                          description: 'This will remove you from accessing it',
-                          buttons: ['Yes', 'No']
-                        })
-                        setToHandle('REMOVE')
-                        setSelectedInviteId(item._id)
-                      }}>Remove</button>
-                    </td>
-                  </tr>
-                })
-              }
-            </tbody>
-          </table>
+          <div className="overflow-x-auto">
+            <table className="w-full whitespace-nowrap border border-slate-100 mb-4">
+              <thead className="bg-slate-100 text-sm text-slate-600 text-left">
+                <tr>
+                  <th className="p-2">Organization Name</th>
+                  <th className="pr-2">Organization Type</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody className="text-sm font-thin">
+                {
+                  !confirmedOu.length
+                    ? <tr className="hover:bg-slate-50 border-b-slate-100">
+                      <td colSpan={3} className="text-center p-2">No Organization Units</td>
+                    </tr> : null
+                }
+                {
+                  confirmedOu.map((item: any) => {
+                    return <tr key={item._id} className="hover:bg-slate-50 border-b-slate-100">
+                      <td className="p-2">{item.organization_details_id.organization_name}</td>
+                      <td>{item.organization_details_id.organization_type_id.organization_type_name}</td>
+                      <td>
+                        <button className="p-1 px-2 text-xs rounded border mr-2" onClick={() => {
+                          setPromptContent({
+                            question: 'Are you sure to switch?',
+                            description: 'This will transfer you to another account',
+                            buttons: ['Yes', 'No']
+                          })
+                          setToHandle('SWITCH')
+                          setSelectedInviteId(item._id)
+                        }}>Switch</button>
+                        <button className="p-1 px-2 text-xs rounded border" onClick={() => {
+                          setPromptContent({
+                            question: 'Are you sure to remove?',
+                            description: 'This will remove you from accessing it',
+                            buttons: ['Yes', 'No']
+                          })
+                          setToHandle('REMOVE')
+                          setSelectedInviteId(item._id)
+                        }}>Remove</button>
+                      </td>
+                    </tr>
+                  })
+                }
+              </tbody>
+            </table>
+          </div>
 
           <div className="grid grid-cols-2 mb-3">
             <h1 className="m-0">Sent Invites</h1>
           </div>
-          <table className="w-full border border-slate-100 mb-4">
-            <thead className="bg-slate-100 text-sm text-slate-600 text-left">
-              <tr>
-                <th className="p-2">Organization Name</th>
-                <th>Organization Type</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody className="text-sm font-thin">
-              {
-                !pendingOut.length
-                  ? <tr className="hover:bg-slate-50 border-b-slate-100">
-                    <td colSpan={3} className="text-center p-2">No Sent Invites</td>
-                  </tr> : null
-              }
-              {
-                pendingOut.map((item: any) => {
-                  console.log({ item })
-                  return <tr key={item._id} className="hover:bg-slate-50 border-b-slate-100">
-                    <td className="p-2">{item.organization_details_id.organization_name}</td>
-                    <td>{item.organization_details_id.organization_type_id.organization_type_name}</td>
-                    <td>
-                      <button className="p-1 px-2 text-xs rounded border mr-2" onClick={() => {
-                        setPromptContent({
-                          question: 'Are you sure to cancel?',
-                          description: 'This will return back your invite',
-                          buttons: ['Yes', 'No']
-                        })
-                        setToHandle('CANCEL')
-                        setSelectedInviteId(item._id)
-                      }}>Cancel</button>
-                    </td>
-                  </tr>
-                })
-              }
-            </tbody>
-          </table>
+          <div className="overflow-x-auto">
+            <table className="w-full whitespace-nowrap border border-slate-100 mb-4">
+              <thead className="bg-slate-100 text-sm text-slate-600 text-left">
+                <tr>
+                  <th className="p-2">Organization Name</th>
+                  <th>Organization Type</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody className="text-sm font-thin">
+                {
+                  !pendingOut.length
+                    ? <tr className="hover:bg-slate-50 border-b-slate-100">
+                      <td colSpan={3} className="text-center p-2">No Sent Invites</td>
+                    </tr> : null
+                }
+                {
+                  pendingOut.map((item: any) => {
+                    console.log({ item })
+                    return <tr key={item._id} className="hover:bg-slate-50 border-b-slate-100">
+                      <td className="p-2">{item.organization_details_id.organization_name}</td>
+                      <td>{item.organization_details_id.organization_type_id.organization_type_name}</td>
+                      <td>
+                        <button className="p-1 px-2 text-xs rounded border mr-2" onClick={() => {
+                          setPromptContent({
+                            question: 'Are you sure to cancel?',
+                            description: 'This will return back your invite',
+                            buttons: ['Yes', 'No']
+                          })
+                          setToHandle('CANCEL')
+                          setSelectedInviteId(item._id)
+                        }}>Cancel</button>
+                      </td>
+                    </tr>
+                  })
+                }
+              </tbody>
+            </table>
+          </div>
 
           <div className="grid grid-cols-2 mb-3">
             <h1 className="m-0">Received Invites</h1>
           </div>
-          <table className="w-full border border-slate-100">
-            <thead className="bg-slate-100 text-sm text-slate-600 text-left">
-              <tr>
-                <th className="p-2">Organization Name</th>
-                <th>Organization Type</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody className="text-sm font-thin">
-              {
-                !receivedOu.length
-                  ? <tr className="hover:bg-slate-50 border-b-slate-100">
-                    <td colSpan={3} className="text-center p-2">No Received Units</td>
-                  </tr> : null
-              }
-              {
-                receivedOu.map((item: any) => {
-                  return <tr key={item._id} className="hover:bg-slate-50 border-b-slate-100">
-                    <td className="p-2">{item.organization_id.organization_name}</td>
-                    <td>{item.organization_id.organization_type_id.organization_type_name}</td>
-                    <td>
-                      <button className="p-1 px-2 text-xs rounded border mr-2" onClick={() => {
-                        setPromptContent({
-                          question: 'Are you sure to accept?',
-                          description: 'This will able to access your account',
-                          buttons: ['Yes', 'No']
-                        })
-                        setToHandle('ACCEPT')
-                        setSelectedInviteId(item._id)
-                      }}>Accept</button>
-                      <button className="p-1 px-2 text-xs rounded border mr-2" onClick={() => {
-                        setPromptContent({
-                          question: 'Are you sure to reject?',
-                          description: 'This will prevent the organization from accessing your account',
-                          buttons: ['Yes', 'No']
-                        })
-                        setToHandle('REJECT')
-                        setSelectedInviteId(item._id)
-                      }}>Reject</button>
-                    </td>
-                  </tr>
-                })
-              }
-            </tbody>
-          </table>
-
-
+          <div className="overflow-x-auto">
+            <table className="w-full border whitespace-nowrap border-slate-100">
+              <thead className="bg-slate-100 text-sm text-slate-600 text-left">
+                <tr>
+                  <th className="p-2">Organization Name</th>
+                  <th className="pr-2">Organization Type</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody className="text-sm font-thin">
+                {
+                  !receivedOu.length
+                    ? <tr className="hover:bg-slate-50 border-b-slate-100">
+                      <td colSpan={3} className="text-center p-2">No Received Units</td>
+                    </tr> : null
+                }
+                {
+                  receivedOu.map((item: any) => {
+                    return <tr key={item._id} className="hover:bg-slate-50 border-b-slate-100">
+                      <td className="p-2">{item.organization_id.organization_name}</td>
+                      <td>{item.organization_id.organization_type_id.organization_type_name}</td>
+                      <td>
+                        <button className="p-1 px-2 text-xs rounded border mr-2" onClick={() => {
+                          setPromptContent({
+                            question: 'Are you sure to accept?',
+                            description: 'This will able to access your account',
+                            buttons: ['Yes', 'No']
+                          })
+                          setToHandle('ACCEPT')
+                          setSelectedInviteId(item._id)
+                        }}>Accept</button>
+                        <button className="p-1 px-2 text-xs rounded border mr-2" onClick={() => {
+                          setPromptContent({
+                            question: 'Are you sure to reject?',
+                            description: 'This will prevent the organization from accessing your account',
+                            buttons: ['Yes', 'No']
+                          })
+                          setToHandle('REJECT')
+                          setSelectedInviteId(item._id)
+                        }}>Reject</button>
+                      </td>
+                    </tr>
+                  })
+                }
+              </tbody>
+            </table>
+          </div>
         </div>
       </section>
     </div>

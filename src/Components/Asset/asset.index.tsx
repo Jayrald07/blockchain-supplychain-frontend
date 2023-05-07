@@ -17,7 +17,7 @@ import ModalIndex from "../Modal/modal.index";
 import TextareaIndex from "../Input/textarea.index";
 import ButtonIndex from "../Button/button.index";
 import AlertIndex from "../Alert/alert.index";
-import { Action, host, port } from "../../utilities";
+import { Action, host, port, validateAndReturn } from "../../utilities";
 import AuthIndex from "../Auth/auth.index";
 import ChannelIndex from "../Channel/channel.index";
 import { TagService } from "../../services/tags";
@@ -85,6 +85,7 @@ const NewAsset = ({
           },
         }
       );
+      console.log(validateAndReturn(data));
       if (data.message === "Done" && data.details.message === 'Done') {
         setAssetName("");
         setDescription("");
@@ -332,6 +333,7 @@ const Asset = () => {
           Authorization: `Bearer ${localStorage.getItem('token')}`
         }
       }).then(({ data }) => {
+        console.log(data);
         if (data.message === 'Done') setAssets(data.details.details)
       }).catch(console.error);
     }

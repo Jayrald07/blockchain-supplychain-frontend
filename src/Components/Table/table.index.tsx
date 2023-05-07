@@ -21,8 +21,8 @@ export default ({
 
   console.log(rows);
   return (
-    <section className="w-full">
-      <table className="w-full border border-slate-100">
+    <section className="w-full overflow-x-auto">
+      <table className="w-full border border-slate-100 whitespace-nowrap">
         <thead className="bg-slate-100 text-sm text-slate-600 text-left">
           <tr>
             <th className="p-2">Origin</th>

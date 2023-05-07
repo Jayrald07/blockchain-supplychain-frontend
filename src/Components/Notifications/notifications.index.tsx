@@ -122,6 +122,7 @@ export default () => {
               </div>
               <div className="col-start-3 justify-self-end">
                 <select className="bg-white p-2 border" onChange={(e) => {
+                  setPage(1);
                   setFetching(true)
                   setLimit(parseInt(e.target.value))
                 }}>

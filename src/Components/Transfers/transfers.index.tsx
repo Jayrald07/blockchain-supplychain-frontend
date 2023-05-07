@@ -10,6 +10,7 @@ import { Modal } from "../Modalv2/modal.index"
 import { HttpMethod, api as globalApi } from "../../services/http";
 import { useNavigate } from "react-router-dom"
 import useChannel from "../../hooks/useChannel"
+import AlertIndex from "../Alert/alert.index"
 
 
 const TransferForm = ({ channelId, toggleModal }: { channelId: string, toggleModal: () => void }) => {
@@ -161,6 +162,7 @@ const TransactionDetails = ({ transaction, channelId, toggleModal }: { transacti
     const [isLoadingAccept, setIsLoadingAccept] = useState(false);
     const [isLoadingTransfer, setIsLoadingTransfer] = useState(false);
     const [isLoadingOwn, setIsLoadingOwn] = useState(false);
+    const [alertContent, setAlertContent] = useState<{ title?: string, description?: string, type?: string }>({})
 
 
     const handleAcceptAsset = async (transactionId: string) => {
@@ -174,14 +176,27 @@ const TransactionDetails = ({ transaction, channelId, toggleModal }: { transacti
             }
         })
 
+        console.log(data)
+
         const cleaned = validateAndReturn(data);
 
-        let response = JSON.parse(cleaned);
+        let response = JSON.parse(cleaned.details);
 
-        if (response.message === "Done") toggleModal();
+        if (response.message === "Error") {
+            setAlertContent({
+                title: 'Error accepting',
+                description: response.details,
+                type: "error"
+            })
+        } else {
+            setAlertContent({
+                title: 'Success accepting',
+                description: response.details,
+                type: "success"
+            })
+        }
 
         setIsLoadingAccept(false)
-
 
     }
 
@@ -195,13 +210,24 @@ const TransactionDetails = ({ transaction, channelId, toggleModal }: { transacti
             }
         })
 
+
         const cleaned = validateAndReturn(data);
 
-        let response = JSON.parse(cleaned);
+        let response = JSON.parse(cleaned.details);
 
-        console.log({ response })
-
-        if (response.message === "Done") toggleModal();
+        if (response.message === "Error") {
+            setAlertContent({
+                title: 'Error transferring',
+                description: response.details,
+                type: "error"
+            })
+        } else {
+            setAlertContent({
+                title: 'Success transferring',
+                description: response.details,
+                type: "success"
+            })
+        }
 
         setIsLoadingTransfer(false)
     }
@@ -218,11 +244,22 @@ const TransactionDetails = ({ transaction, channelId, toggleModal }: { transacti
 
         const cleaned = validateAndReturn(data);
 
-        let response = JSON.parse(cleaned);
+        let response = JSON.parse(cleaned.details);
 
-        console.log({ response })
+        if (response.message === "Error") {
+            setAlertContent({
+                title: 'Error owning the asset',
+                description: response.details,
+                type: "error"
+            })
+        } else {
+            setAlertContent({
+                title: 'Success owning the asset',
+                description: response.details,
+                type: "success"
+            })
+        }
 
-        if (response.message === "Done") toggleModal()
         setIsLoadingOwn(false)
     }
 
@@ -253,6 +290,13 @@ const TransactionDetails = ({ transaction, channelId, toggleModal }: { transacti
 
     return (
         <div>
+            {
+                Object.keys(alertContent).length
+                    ? <AlertIndex title={alertContent.title as string} type={alertContent.type as string} content={alertContent.description as string} handleClose={() => {
+                        setAlertContent({});
+                    }} />
+                    : null
+            }
             <p className="text-sm mb-2 font-light"><b>Transferring to: </b>{transaction.length ? transaction[0].newOwnerMSP : null}</p>
             <table className="w-full border border-slate-100 text-left mb-4">
                 <thead className="bg-slate-100 text-sm text-slate-600">
@@ -409,48 +453,53 @@ const Transfer = () => {
                                     : null
                             }
                             <label className="text-sm mb-2 block">Transfers</label>
-                            <table className="w-full border border-slate-100 text-left">
-                                <thead className="bg-slate-100 text-sm text-slate-600">
-                                    <tr>
-                                        <th className="p-2">Transaction ID</th>
-                                        <th>Status</th>
-                                        <th>Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="text-sm font-thin text-left">
-                                    {
-                                        !transactions.length
-                                            ? <tr className="hover:bg-slate-50 border-b border-b-slate-100">
-                                                <td className="p-2 text-center" colSpan={5}>No Transfers</td>
-                                            </tr> : null
-                                    }
-                                    {
-                                        transactions.map((transaction: any) => {
-                                            return (
-                                                <tr key={transaction.id} className="hover:bg-slate-50 border-b-slate-100 text-left">
-                                                    <td className="py-2 px-2 pr-4 text-left">{transaction.id}</td>
-                                                    <td>
-                                                        <span className={`${transaction.isNewOwnerAccepted ? 'bg-gray-200' : 'bg-orange-200'} p-1 rounded`}>
-                                                            {
-                                                                transaction.isNewOwnerAccepted && transaction.isCurrentOwnerApproved ? "For own" : null
-                                                            }
-                                                            {
-                                                                !transaction.isNewOwnerAccepted && !transaction.isCurrentOwnerApproved ? "For Acceptance" : null
-                                                            }
-                                                            {
-                                                                transaction.isNewOwnerAccepted && !transaction.isCurrentOwnerApproved ? "For owner approval" : null
-                                                            }
-                                                        </span>
-                                                    </td>
-                                                    <td>
-                                                        <a href="#" className="underline hover:no-underline" onClick={() => toggleViewDtailsModal(transaction.id)}>View details</a>
-                                                    </td>
-                                                </tr>
-                                            )
-                                        })
-                                    }
-                                </tbody>
-                            </table>
+                            <div className="overflow-x-auto">
+
+                                <table className="w-full whitespace-nowrap border border-slate-100 text-left">
+                                    <thead className="bg-slate-100 text-sm text-slate-600">
+                                        <tr>
+                                            <th className="p-2">Transaction ID</th>
+                                            <th>Status</th>
+                                            <th className="px-4">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="text-sm font-thin text-left">
+                                        {
+                                            !transactions.length
+                                                ? <tr className="hover:bg-slate-50 border-b border-b-slate-100">
+                                                    <td className="p-2 text-center" colSpan={5}>No Transfers</td>
+                                                </tr> : null
+                                        }
+                                        {
+                                            transactions.map((transaction: any) => {
+                                                return (
+                                                    <tr key={transaction.id} className="hover:bg-slate-50 border-b-slate-100 text-left">
+                                                        <td className="py-2 px-2 pr-4 text-left">{transaction.id}</td>
+                                                        <td>
+                                                            <span className={`${transaction.isNewOwnerAccepted ? 'bg-gray-200' : 'bg-orange-200'} p-1 rounded`}>
+                                                                {
+                                                                    transaction.isNewOwnerAccepted && transaction.isCurrentOwnerApproved ? "For own" : null
+                                                                }
+                                                                {
+                                                                    !transaction.isNewOwnerAccepted && !transaction.isCurrentOwnerApproved ? "For Acceptance" : null
+                                                                }
+                                                                {
+                                                                    transaction.isNewOwnerAccepted && !transaction.isCurrentOwnerApproved ? "For owner approval" : null
+                                                                }
+                                                            </span>
+                                                        </td>
+                                                        <td className="px-4">
+                                                            <a href="#" className="underline hover:no-underline" onClick={() => toggleViewDtailsModal(transaction.id)}>View details</a>
+                                                        </td>
+                                                    </tr>
+                                                )
+                                            })
+                                        }
+                                    </tbody>
+                                </table>
+
+                            </div>
+
                         </>
                         :
                         <div className="text-center grid ">

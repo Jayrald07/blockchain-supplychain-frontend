@@ -23,7 +23,11 @@ export interface HttpResposne {
 
 export const validateAndReturn = (httpResponse: HttpResposne | any): any => {
     if (Object.keys(httpResponse).includes("details")) {
-        return validateAndReturn(httpResponse.details)
+        if (typeof httpResponse.details !== "string") {
+            return validateAndReturn(httpResponse.details)
+        } else {
+            return httpResponse;
+        }
     } else {
         return httpResponse;
     }

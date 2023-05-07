@@ -282,56 +282,62 @@ export default () => {
           <ButtonIndex handleClick={() => setTagModal(!tagModal)} Icon={<FontAwesomeIcon icon={faPlus} size="xs" />} />
 
         </div>
-        <table className="w-full border border-slate-100">
-          <thead className="bg-slate-100 text-sm text-slate-600 text-left">
-            <tr>
-              <th className="p-2">Key</th>
-              <th>Type</th>
-              <th>Default</th>
-              <th>Options</th>
-              <th className="text-center">Action</th>
-            </tr>
-          </thead>
-          <tbody className="text-sm font-thin">
-            {
-              !tags.length
-                ? <tr className="hover:bg-slate-50 border-b border-b-slate-100">
-                  <td className="p-2 text-center" colSpan={5}>No Metadata</td>
-                </tr> : null
-            }
-            {
-              tags.map((tag: any, index: number) => {
-                return <tr key={tag.tag_key} className={`${tag.organization_id === "SYSTEM" ? "bg-slate-50" : ''} hover:bg-slate-50 border-b border-b-slate-100`}>
-                  <td className="py-2 px-2">{tag.tag_key}</td>
-                  <td>{tag.tag_type}</td>
-                  <td>{tag.tag_default_value ? tag.tag_default_value : "NONE"}</td>
-                  <td>
-                    {
-                      tag.tag_options.length ?
-                        <select required className="py-2 px-3 text-sm w-full bg-transparent  outline-none font-thin"> {
-                          tag.tag_options.map((tag_option: any) => {
-                            return <option key={tag_option} value={tag_option}>{tag_option}</option>
-                          })
-                        }
-                        </select>
-                        : "NONE"
-                    }
-                  </td>
-                  <td className="text-center">
-                    {
-                      tag.organization_id !== "SYSTEM" ?
-                        <>
-                          <a href="#" className="border rounded-sm py-1 px-2 hover:bg-slate-100 mr-2" onClick={() => handleTagUpdate(index)}>Update</a>
-                          <a href="#" className="border rounded-sm py-1 px-2 hover:bg-slate-100" onClick={() => handleTagDelete(tag._id)}>Delete</a>
-                        </>
-                        : <span className="text-slate-500"><FontAwesomeIcon icon={faLock} size="xs" /></span>
-                    }
-                  </td>
-                </tr>
-              })
-            }
-          </tbody>
-        </table>
+        <div className="overflow-x-auto">
+
+
+          <table className="w-full whitespace-nowrap border border-slate-100">
+            <thead className="bg-slate-100 text-sm text-slate-600 text-left">
+              <tr>
+                <th className="p-2">Key</th>
+                <th>Type</th>
+                <th>Default</th>
+                <th>Options</th>
+                <th className="text-center">Action</th>
+              </tr>
+            </thead>
+            <tbody className="text-sm font-thin">
+              {
+                !tags.length
+                  ? <tr className="hover:bg-slate-50 border-b border-b-slate-100">
+                    <td className="p-2 text-center" colSpan={5}>No Metadata</td>
+                  </tr> : null
+              }
+              {
+                tags.map((tag: any, index: number) => {
+                  return <tr key={tag.tag_key} className={`${tag.organization_id === "SYSTEM" ? "bg-slate-50" : ''} hover:bg-slate-50 border-b border-b-slate-100`}>
+                    <td className="py-2 px-2">{tag.tag_key}</td>
+                    <td>{tag.tag_type}</td>
+                    <td>{tag.tag_default_value ? tag.tag_default_value : "NONE"}</td>
+                    <td>
+                      {
+                        tag.tag_options.length ?
+                          <select required className="py-2 px-3 text-sm w-full bg-transparent  outline-none font-thin"> {
+                            tag.tag_options.map((tag_option: any) => {
+                              return <option key={tag_option} value={tag_option}>{tag_option}</option>
+                            })
+                          }
+                          </select>
+                          : "NONE"
+                      }
+                    </td>
+                    <td className="text-center">
+                      {
+                        tag.organization_id !== "SYSTEM" ?
+                          <>
+                            <a href="#" className="border rounded-sm py-1 px-2 hover:bg-slate-100 mr-2" onClick={() => handleTagUpdate(index)}>Update</a>
+                            <a href="#" className="border rounded-sm py-1 px-2 hover:bg-slate-100" onClick={() => handleTagDelete(tag._id)}>Delete</a>
+                          </>
+                          : <span className="text-slate-500"><FontAwesomeIcon icon={faLock} size="xs" /></span>
+                      }
+                    </td>
+                  </tr>
+                })
+              }
+            </tbody>
+          </table>
+
+        </div>
+
       </div>
     </div>
   </div >
