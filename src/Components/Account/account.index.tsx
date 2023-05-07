@@ -324,7 +324,7 @@ const Account = () => {
     })
     else setAlertContent({
       title: 'Success sending email verification',
-      content: data.details,
+      content: 'Please see it in your inbox',
       type: 'success'
     })
 

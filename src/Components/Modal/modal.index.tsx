@@ -18,14 +18,14 @@ export default ({
 }) => {
   return (
     <section
-      className="absolute top-0 left-0 w-full justify-center bg-slate-500 h-full flex items-center"
+      className="fixed top-0 px-5 left-0 w-full justify-center bg-slate-500 h-full flex items-center"
       style={{ backgroundColor: "rgba(0,0,0,0.2)" }}
       onClick={(e) => {
         handleClose();
       }}
     >
       <div
-        className="w-2/4 md:w-1/2 lg:w-1/2 xl:w-1/3 bg-white rounded border shadow-md"
+        className="w-full md:w-1/2 lg:w-1/2 xl:w-1/3 bg-white rounded border shadow-md"
         onClick={(e) => {
           e.stopPropagation();
         }}

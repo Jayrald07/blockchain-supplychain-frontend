@@ -23,8 +23,10 @@ export default () => {
           qrbox: { width: 200, height: 200 },
         },
         async (text: any, result: any) => {
-          await html5qr.current.stop();
-          setIsScanned(true);
+          alert(text)
+          console.log(text, result)
+          // await html5qr.current.stop();
+          // setIsScanned(true);
         },
         (error: any) => { }
       );

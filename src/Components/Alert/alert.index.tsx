@@ -27,7 +27,7 @@ export default ({
   }, []);
 
   return (
-    <div className="absolute flex justify-center w-full top-0 left-0">
+    <div className="fixed flex justify-center w-full top-0 left-0">
       <div className={`rounded py-5 px-8 mt-3 shadow-md z-50 ${theme.bg} relative w-72`}>
         <a onClick={handleClose} href="#" role="button" className={`absolute top-2 right-3 text-sm ${theme.text}`}>
           <FontAwesomeIcon icon={faClose} />

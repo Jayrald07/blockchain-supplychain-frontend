@@ -267,7 +267,7 @@ const NewAsset = ({
           <>
             <span onClick={handleTagsAdd} className="block border-dashed border-slate-300 border rounded text-xs text-center py-3 text-slate-300 mb-4 mt-4" ><FontAwesomeIcon icon={faPlus} size="xs" /> Add Metadata</span>
             {action !== "view" ? (
-              <ButtonIndex label={inSubmission ? '' : action === "update" ? "Update" : "Save"} Icon={inSubmission ? <FontAwesomeIcon className="animate-spin" icon={faSpinner} /> : null} />
+              <ButtonIndex label={inSubmission ? '' : action === "update" ? "Update" : "Save"} Icon={inSubmission ? <FontAwesomeIcon className="animate-spin" icon={faSpinner} /> : undefined} />
             ) : null}
           </>
           : null

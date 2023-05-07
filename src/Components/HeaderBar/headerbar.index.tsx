@@ -27,7 +27,7 @@ export default () => {
       },
     });
 
-    if (data.message === "Done") setNotifs(data.details);
+    if (data.message === "Done") setNotifs(data.details.notifs);
   }
 
   const handleViewNotifs = async () => {
@@ -66,7 +66,7 @@ export default () => {
       <Statusbar />
       <ul className="flex justify-end text-slate-700">
         <li className="notification-tab" onMouseLeave={handleViewNotifs}>
-          <a href="#" className="p-5 px-6 block hover:bg-gray-100 relative">
+          <a href="#" className="p-5 px-6 block hover:bg-gray-100 relative z-10">
             <FontAwesomeIcon icon={faBell} />
             {
               notifs.length
@@ -77,13 +77,13 @@ export default () => {
               <div className=" px-3 py-2 border-b grid grid-cols-2 items-center">
                 <h1 className="text-sm">Notifications</h1>
                 <a href="#" onClick={() => {
-                  navigate("/asset")
+                  navigate("/notifications")
                 }} className="underline text-xs font-light justify-self-end cursor-pointer">Show All</a>
               </div>
               <ul className="text-xs overflow-y-auto max-h-48">
                 {
                   notifs.map((notif: any) => {
-                    return <li className="grid py-4 px-3 bg-slate-50 border-b">
+                    return <li key={notif._id} className="grid py-4 px-3 bg-slate-50 border-b">
                       <span>{notif.title}</span>
                       <span className="font-light mb-2">{notif.description}</span>
                       <span className="font-light">{new Date(notif.createdAt).toLocaleString()}</span>

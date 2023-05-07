@@ -18,6 +18,7 @@ import TransfersIndex from "./Components/Transfers/transfers.index";
 import TransactionsIndex from "./Components/Transactions/transactions.index";
 import SettingsIndex from "./Components/Settings/settings.index";
 import EmailverificationIndex from "./Components/EmailVerification/emailverification.index";
+import NotificationsIndex from "./Components/Notifications/notifications.index";
 
 const Redire = () => {
   useEffect(() => {
@@ -115,7 +116,12 @@ const router = createBrowserRouter([
   {
     path: "/email-verification",
     element: <EmailverificationIndex />
+  },
+  {
+    path: "/notifications",
+    element: <NotificationsIndex />
   }
+
 ]);
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   // <React.StrictMode>

@@ -9,6 +9,7 @@ import { faPlus, faSpinner } from "@fortawesome/free-solid-svg-icons"
 import { Modal } from "../Modalv2/modal.index"
 import { HttpMethod, api as globalApi } from "../../services/http";
 import { useNavigate } from "react-router-dom"
+import useChannel from "../../hooks/useChannel"
 
 
 const TransferForm = ({ channelId, toggleModal }: { channelId: string, toggleModal: () => void }) => {
@@ -332,6 +333,7 @@ const Transfer = () => {
     const [isViewDetails, setIsViewDetails] = useState(false);
     const [selectedTransaction, setSelectedTransaction] = useState({});
     const navigate = useNavigate();
+    const channels = useChannel();
 
     const handleTransactions = () => {
         if (channel.trim()) {
@@ -379,7 +381,7 @@ const Transfer = () => {
             <Headerbar />
             <div className="px-10 lg:px-24 md:px-20 sm:px-10 xl:px-24 py-20">
                 {
-                    channel.trim()
+                    channels.length
                         ? <>
                             <h1 className="text-2xl mb-5">Transfers</h1>
 
@@ -416,6 +418,12 @@ const Transfer = () => {
                                     </tr>
                                 </thead>
                                 <tbody className="text-sm font-thin text-left">
+                                    {
+                                        !transactions.length
+                                            ? <tr className="hover:bg-slate-50 border-b border-b-slate-100">
+                                                <td className="p-2 text-center" colSpan={5}>No Transfers</td>
+                                            </tr> : null
+                                    }
                                     {
                                         transactions.map((transaction: any) => {
                                             return (

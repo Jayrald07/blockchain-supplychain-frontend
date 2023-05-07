@@ -6,6 +6,7 @@ import ChannelIndex from "../Channel/channel.index"
 import { HttpMethod, api } from "../../services/http"
 import { Action, HttpResposne, validateAndReturn } from "../../utilities"
 import { useNavigate } from "react-router-dom"
+import useChannel from "../../hooks/useChannel"
 
 interface Logs {
     action: string,
@@ -20,6 +21,7 @@ const Transaction = () => {
     const [channelId, setChannelId] = useState("");
     const [activities, setActivities] = useState<Logs[]>([]);
     const navigate = useNavigate();
+    const channels = useChannel();
 
     const handleValue = (channelId: string) => {
         setChannelId(channelId);
@@ -51,11 +53,11 @@ const Transaction = () => {
 
     return <div className="grid grid-cols-5 h-full">
         <Navbar />
-        <div className="col-span-5 sm:col-span-5 md:col-span-4 overflow-y-auto">
+        <div className="col-span-5 sm:col-span-5 md:col-span-5 overflow-y-auto">
             <Headerbar />
-            <div className="px-24 py-20">
+            <div className="px-10 py-20 sm:px-10 md:px-16 lg:px-24">
                 {
-                    channelId.trim()
+                    channels.length
                         ?
                         <>
                             <h1 className="text-2xl mb-5">Transactions</h1>
@@ -67,8 +69,8 @@ const Transaction = () => {
                                 </div>
                             </div>
                             <div className="overflow-x-auto">
-                                <table className="block whitespace-nowrap border-slate-100">
-                                    <thead className="bg-slate-100 text-sm text-slate-600 text-left">
+                                <table className="w-full whitespace-nowrap border-slate-100">
+                                    <thead className="w-full bg-slate-100 text-sm text-slate-600 text-left">
                                         <tr>
                                             <th className="p-2">Processed By</th>
                                             <th className="p-2">Date</th>
@@ -77,6 +79,12 @@ const Transaction = () => {
                                         </tr>
                                     </thead>
                                     <tbody className="text-sm font-thin">
+                                        {
+                                            !activities.length
+                                                ? <tr className="hover:bg-slate-50 border-b border-b-slate-100">
+                                                    <td className="p-2 text-center" colSpan={5}>No Transactions</td>
+                                                </tr> : null
+                                        }
                                         {
                                             activities.map(activity => {
                                                 return <tr key={`${activity.timestamp}-${activity.initiated}`} className="hover:bg-slate-50 border-b-slate-100">

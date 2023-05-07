@@ -77,7 +77,7 @@ export default () => {
     }
     {
       valid === 'invalid'
-        ? <div className="py-3 text-center">
+        ? <div className="py-3 text-center flex flex-col justify-center items-center h-full">
           <h1 className="mb-3">Invalid Token</h1>
           <button className="text-xs font-light border rounded p-2 bg-white" onClick={() => {
             navigate("/login")
