@@ -19,7 +19,6 @@ export default () => {
   const navigate = useNavigate();
 
   const handleResponse = (data: any) => {
-    console.log(data)
     if (data.message === "Error") {
       setIsModal(true);
       setAlertTitle("Credential Error");

@@ -51,7 +51,6 @@ export default () => {
 
   useEffect(() => {
     (async () => {
-      console.log(token)
       const { data } = await api.post("/getEmailVerification", {
         token: token
       })

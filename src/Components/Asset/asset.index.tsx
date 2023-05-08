@@ -24,6 +24,7 @@ import { TagService } from "../../services/tags";
 import { KeyValue, Response, Tag } from "../../typedef";
 import { useNavigate } from "react-router-dom";
 import useChannel from "../../hooks/useChannel";
+import useVerified from "../../hooks/useVerified";
 
 
 const NewAsset = ({
@@ -85,7 +86,6 @@ const NewAsset = ({
           },
         }
       );
-      console.log(validateAndReturn(data));
       if (data.message === "Done" && data.details.message === 'Done') {
         setAssetName("");
         setDescription("");
@@ -190,8 +190,6 @@ const NewAsset = ({
             },
           })
 
-        console.log(dataTag)
-
         setSelectedTags(JSON.parse(dataTag.details.details.details.tags))
 
       } else {
@@ -221,7 +219,6 @@ const NewAsset = ({
       }
       {
         selectedTags.map((selectedTag, index) => {
-          console.log(selectedTag)
           return <div key={`${selectedTag.type}-${index}`}>
             <section className="grid grid-cols-2 pr-2">
               {
@@ -290,6 +287,7 @@ const Asset = () => {
   const [channel, setChannel] = useState('');
   const navigate = useNavigate();
   const channels = useChannel();
+  const [emailVerified, reloadVar, reloader] = useVerified();
 
   const api = axios.create({ baseURL: `${host}:${port}` });
 
@@ -333,7 +331,6 @@ const Asset = () => {
           Authorization: `Bearer ${localStorage.getItem('token')}`
         }
       }).then(({ data }) => {
-        console.log(data);
         if (data.message === 'Done') setAssets(data.details.details)
       }).catch(console.error);
     }
@@ -351,74 +348,88 @@ const Asset = () => {
   }, [isModal, isAlert]);
 
   return (
-    <main className="grid grid-cols-5 h-full">
-      <NavbarIndex />
-      <div className="col-span-5 sm:col-span-5 md:col-span-4">
-        <HeaderbarIndex />
-        <section className="px-10 lg:px-28 md:px-20 sm:px-10 xl:px-24 pt-20">
-
-          {
-            channels.length
-              ?
-              <>
-                <h1 className="text-2xl mb-5">Manage Assets</h1>
-                <section className="grid grid-cols-4 items-end gap-x-4">
-                  <InputIndex
-                    icon={<FontAwesomeIcon icon={faSearch} />}
-                    label="Search Asset"
-                    placeholder=""
-                    type="text"
-                    value={searchText}
-                    handler={handleSearch}
-                  />
-                  <section className="col-span-2">
-                    <label className="text-sm mb-2 block">Channels</label>
-                    <ChannelIndex handleValue={(value) => setChannel(value)} />
-                  </section>
-                  <button
-                    className="border rounded py-2 px-3.5 hover:bg-gray-100 text-xs mb-4"
-                    onClick={() => {
-                      setAction("");
-                      setIsModal(true);
-                    }}
-                  >
-                    <span>Create New Asset</span> <FontAwesomeIcon icon={faPlus} />
-                  </button>
-                </section>
-                <Table
-                  rows={assets}
-                  handleUpdate={handleUpdate}
-                  handleView={handleView}
-                />
-              </>
-              :
-              <div className="text-center grid ">
-                <h1>You don't have any connections to other organizations.</h1>
-                <small className="font-light block mb-3">Please connect to atleast 1 organization to show this page.</small>
-                <button className="border rounded text-xs p-2 px-4 justify-self-center hover:bg-slate-100" onClick={handleRedirectConnection}>Create connection</button>
-              </div>
-          }
-
-
-        </section>
-      </div>
+    <>
       {
-        isAlert ? <AlertIndex content="Asset created" title="Success" type="success" handleClose={() => setIsAlert(false)} /> : null
+        emailVerified === 'NOT VERIFIED'
+          ? <div className="bg-red-500 text-center py-2">
+            <small>Looks like your email is not verified yet. Go to your <a href="#"
+              onClick={() => {
+                navigate("/account");
+              }}
+              className="underline"
+            >account</a> to verify</small>
+          </div>
+          : null
       }
-      {isModal ? (
-        <ModalIndex
-          assetId={selectedAssetId}
-          action={action}
-          channelId={channel}
-          Component={NewAsset}
-          handleClose={(response: string) => {
-            setSelectedAssetId("");
-            setIsModal(false);
-            setIsAlert(response === 'returned' ? true : false);
-          }}
-        />
-      ) : null}
-    </main>
+      <main className="grid grid-cols-5 h-full">
+        <NavbarIndex />
+        <div className="col-span-5 sm:col-span-5 md:col-span-4">
+          <HeaderbarIndex />
+          <section className="px-10 lg:px-28 md:px-20 sm:px-10 xl:px-24 pt-20">
+
+            {
+              channels.length && channels[0].trim()
+                ?
+                <>
+                  <h1 className="text-2xl mb-5">Manage Assets</h1>
+                  <section className="grid grid-cols-4 items-end gap-x-4">
+                    <InputIndex
+                      icon={<FontAwesomeIcon icon={faSearch} />}
+                      label="Search Asset"
+                      placeholder=""
+                      type="text"
+                      value={searchText}
+                      handler={handleSearch}
+                    />
+                    <section className="col-span-2">
+                      <label className="text-sm mb-2 block">Channels</label>
+                      <ChannelIndex handleValue={(value) => setChannel(value)} />
+                    </section>
+                    <button
+                      className="border rounded py-2 px-3.5 hover:bg-gray-100 text-xs mb-4"
+                      onClick={() => {
+                        setAction("");
+                        setIsModal(true);
+                      }}
+                    >
+                      <span>Create New Asset</span> <FontAwesomeIcon icon={faPlus} />
+                    </button>
+                  </section>
+                  <Table
+                    rows={assets}
+                    handleUpdate={handleUpdate}
+                    handleView={handleView}
+                  />
+                </>
+                :
+                <div className="text-center grid ">
+                  <h1>You don't have any connections to other organizations.</h1>
+                  <small className="font-light block mb-3">Please connect to atleast 1 organization to show this page.</small>
+                  <button className="border rounded text-xs p-2 px-4 justify-self-center hover:bg-slate-100" onClick={handleRedirectConnection}>Create connection</button>
+                </div>
+            }
+
+
+          </section>
+        </div>
+        {
+          isAlert ? <AlertIndex content="Asset created" title="Success" type="success" handleClose={() => setIsAlert(false)} /> : null
+        }
+        {isModal ? (
+          <ModalIndex
+            assetId={selectedAssetId}
+            action={action}
+            channelId={channel}
+            Component={NewAsset}
+            handleClose={(response: string) => {
+              setSelectedAssetId("");
+              setIsModal(false);
+              setIsAlert(response === 'returned' ? true : false);
+            }}
+          />
+        ) : null}
+      </main>
+    </>
   );
 };
 

@@ -8,12 +8,14 @@ import "./account.index.css";
 import AuthIndex from "../Auth/auth.index";
 import { host, port } from "../../utilities";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEnvelope, faPlus } from "@fortawesome/free-solid-svg-icons";
+import { faEnvelope, faPlus, faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { Modal } from "../Modalv2/modal.index";
 import AlertIndex from "../Alert/alert.index";
 import PromptIndex from "../Prompt/prompt.index";
 import { Socket } from "socket.io-client";
 import useSocket from "../../hooks/useSocket";
+import useVerified from "../../hooks/useVerified";
+import { useNavigate } from "react-router-dom";
 
 const Account = () => {
   const [username, setUsername] = useState("");
@@ -36,6 +38,8 @@ const Account = () => {
   const [isEmailVerified, setIsEmailVerified] = useState(false);
   const [emailStatus, setEmailStatus] = useState('LOADING');
   const [emailRefer, setEmailRefer] = useState("");
+  const [emailVerified, reloadVar, reloader] = useVerified();
+  const navigate = useNavigate();
 
   const api = axios.create({ baseURL: `${host}:${port}` });
 
@@ -79,7 +83,6 @@ const Account = () => {
           Authorization: `Basic ${localStorage.getItem("token")}`,
         },
       })
-      console.log({ data })
       if (data.message === 'Error') {
         setAlertContent({
           type: 'error',
@@ -177,7 +180,6 @@ const Account = () => {
           Authorization: `Basic ${localStorage.getItem("token")}`,
         }
       })
-      console.log(data)
       if (data.message === "Done") setAlertContent({
         type: 'success',
         title: 'Organization unit removed',
@@ -204,7 +206,6 @@ const Account = () => {
           Authorization: `Basic ${localStorage.getItem("token")}`,
         }
       })
-      console.log(data)
       if (data.message === "Done") setAlertContent({
         type: 'success',
         title: 'Organization unit canceled',
@@ -231,7 +232,6 @@ const Account = () => {
           Authorization: `Basic ${localStorage.getItem("token")}`,
         }
       })
-      console.log(data)
       if (data.message === "Done") setAlertContent({
         type: 'success',
         title: 'Organization unit rejected',
@@ -257,7 +257,6 @@ const Account = () => {
         Authorization: `Basic ${localStorage.getItem("token")}`,
       }
     })
-    console.log(invited)
     if (invited.message === "Done") setConfirmedOu(invited.details);
     else setAlertContent({
       type: 'error',
@@ -275,7 +274,6 @@ const Account = () => {
         Authorization: `Basic ${localStorage.getItem("token")}`,
       }
     })
-    console.log(received)
     if (received.message === "Done") {
       if (_received) setReceivedOu(received.details);
       else setPendingOu(received.details)
@@ -338,7 +336,6 @@ const Account = () => {
         Authorization: `Basic ${localStorage.getItem("token")}`,
       },
     });
-    console.log(data)
     if (data) {
       setUsername(data.username);
       setAddress(data.organization_address);
@@ -375,239 +372,266 @@ const Account = () => {
             handlePendings(true);
             handlePendings(false)
             handleAccountProfile();
+            reloader(!reloadVar);
           }
         });
     }
   }, [socket]);
 
   return (
-    <div className="grid grid-cols-5 h-full">
+    <>
       {
-        promptContent && Object.keys(promptContent).length ?
-          <PromptIndex question={promptContent.question as string} description={promptContent.description as string} buttons={promptContent.buttons as string[]} onClose={handleClosePrompt} handleClick={handlePromptResponse} />
+        emailVerified === 'NOT VERIFIED'
+          ? <div className="bg-red-500 text-center py-2">
+            <small>Looks like your email is not verified yet. Go to your <a href="#"
+              onClick={() => {
+                navigate("/account");
+              }}
+              className="underline"
+            >account</a> to verify</small>
+          </div>
           : null
       }
 
-      {
-        isModal ?
-          <Modal size="sm" title="Invite Organization" toggleModal={() => setIsModal(false)}>
-            <form onSubmit={handleInvite}>
-              <InputIndex type="text" label="Input Organization Username" value={inviteUsername} handler={(e: any) => setInviteUsername(e.target.value)} />
-              <button className="w-full p-1 border rounded text-sm">Invite</button>
-            </form>
-          </Modal> : null
-      }
-      {
-        alertContent && Object.keys(alertContent).length
-          ?
-          <AlertIndex title={alertContent.title as string} content={alertContent.content as string} type={alertContent.type as string} handleClose={handleInviteClose} />
-          : null
-      }
-      <NavbarIndex />
-      <section className={`col-span-5 sm:col-span-5 md:col-span-5`}>
-        <HeaderbarIndex />
-        <div className="px-10 lg:px-28 md:px-20 sm:px-10 xl:px-24 pt-20 mb-10">
-          <h1>
-            Account / {organizationName} <small className="badge">{type}</small>
-          </h1>
-          <section className="account-bar">
-            <h4>Contact Information</h4>
-          </section>
-          <section className="account-profile">
-            <div>
-              <InputIndex
-                label="Address"
-                type="text"
-                value={address}
-                handler={(e: any) => setAddress(e.target.value)}
-              />
-              <InputIndex
-                label="Contact Number"
-                type="text"
-                value={phone}
-                handler={(e: any) => setPhone(e.target.value)}
-              />
-              <InputIndex
-                label="Username"
-                type="text"
-                value={username}
-                handler={(e: any) => setUsername(e.target.value)}
-              />
+      <div className="grid grid-cols-5 h-full">
+        {
+          promptContent && Object.keys(promptContent).length ?
+            <PromptIndex question={promptContent.question as string} description={promptContent.description as string} buttons={promptContent.buttons as string[]} onClose={handleClosePrompt} handleClick={handlePromptResponse} />
+            : null
+        }
+
+        {
+          isModal ?
+            <Modal size="sm" title="Invite Organization" toggleModal={() => setIsModal(false)}>
+              <form onSubmit={handleInvite}>
+                <InputIndex type="text" label="Input Organization Username" value={inviteUsername} handler={(e: any) => setInviteUsername(e.target.value)} />
+                <button className="w-full p-1 border rounded text-sm">Invite</button>
+              </form>
+            </Modal> : null
+        }
+        {
+          alertContent && Object.keys(alertContent).length
+            ?
+            <AlertIndex title={alertContent.title as string} content={alertContent.content as string} type={alertContent.type as string} handleClose={handleInviteClose} />
+            : null
+        }
+        <NavbarIndex />
+        <section className={`col-span-5 sm:col-span-5 md:col-span-5`}>
+          <HeaderbarIndex />
+          <div className="px-10 lg:px-28 md:px-20 sm:px-10 xl:px-24 pt-20 mb-10">
+            <h1>
+              Account / {organizationName} <small className="badge">{type}</small>
+            </h1>
+            <section className="account-bar">
+              <h4>Contact Information</h4>
+            </section>
+            <section className="account-profile">
               <div>
-                <form onSubmit={handleEmailVerify}>
-                  <InputIndex
-                    label="Email"
-                    type="email"
-                    value={email}
-                    handler={(e: any) => setEmail(e.target.value)}
-                  />
-                  {
-                    !isEmailVerified
-                      ? emailStatus === 'PENDING'
-                        ? <small className="bg-orange-600 rounded-md p-1 text-center text-white text-xs">Pending</small>
-                        : emailStatus === 'LOADING'
-                          ? null
+                <InputIndex
+                  label="Address"
+                  type="text"
+                  value={address}
+                  handler={(e: any) => setAddress(e.target.value)}
+                />
+                <InputIndex
+                  label="Contact Number"
+                  type="text"
+                  value={phone}
+                  handler={(e: any) => setPhone(e.target.value)}
+                />
+                <InputIndex
+                  label="Username"
+                  type="text"
+                  value={username}
+                  handler={(e: any) => setUsername(e.target.value)}
+                />
+                <div>
+                  <form onSubmit={handleEmailVerify}>
+                    <InputIndex
+                      label="Email"
+                      type="email"
+                      value={email}
+                      handler={(e: any) => setEmail(e.target.value)}
+                    />
+                    {
+                      !isEmailVerified
+                        ? emailStatus === 'PENDING'
+                          ? <small className="bg-orange-600 rounded-md p-1 text-center text-white text-xs">Pending</small>
+                          : emailStatus === 'LOADING'
+                            ? null
+                            : <button className="border text-xs rounded bg-white p-1 px-3">Verify Email</button>
+                        : email === emailRefer
+                          ? <small className="bg-green-600 rounded-md p-1 text-center text-white text-xs">Verified</small>
                           : <button className="border text-xs rounded bg-white p-1 px-3">Verify Email</button>
-                      : email === emailRefer
-                        ? <small className="bg-green-600 rounded-md p-1 text-center text-white text-xs">Verified</small>
-                        : <button className="border text-xs rounded bg-white p-1 px-3">Verify Email</button>
-                  }
-                </form>
+                    }
+                  </form>
+                </div>
+                <ButtonIndex label="Save" handleClick={handleUpdate} />
               </div>
-              <ButtonIndex label="Save" handleClick={handleUpdate} />
-            </div>
-          </section>
+            </section>
 
-          <div className="grid grid-cols-2 mb-3">
-            <h1 className="m-0">Organization Units</h1>
-            <div className="justify-self-end">
-              <button className="border p-1 px-2 rounded text-sm font-light justify-self-end" onClick={() => setIsModal(true)}><FontAwesomeIcon icon={faPlus} size="sm" /> Add</button>
-            </div>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full whitespace-nowrap border border-slate-100 mb-4">
-              <thead className="bg-slate-100 text-sm text-slate-600 text-left">
-                <tr>
-                  <th className="p-2">Organization Name</th>
-                  <th className="pr-2">Organization Type</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody className="text-sm font-thin">
-                {
-                  !confirmedOu.length
-                    ? <tr className="hover:bg-slate-50 border-b-slate-100">
-                      <td colSpan={3} className="text-center p-2">No Organization Units</td>
-                    </tr> : null
-                }
-                {
-                  confirmedOu.map((item: any) => {
-                    return <tr key={item._id} className="hover:bg-slate-50 border-b-slate-100">
-                      <td className="p-2">{item.organization_details_id.organization_name}</td>
-                      <td>{item.organization_details_id.organization_type_id.organization_type_name}</td>
-                      <td>
-                        <button className="p-1 px-2 text-xs rounded border mr-2" onClick={() => {
-                          setPromptContent({
-                            question: 'Are you sure to switch?',
-                            description: 'This will transfer you to another account',
-                            buttons: ['Yes', 'No']
-                          })
-                          setToHandle('SWITCH')
-                          setSelectedInviteId(item._id)
-                        }}>Switch</button>
-                        <button className="p-1 px-2 text-xs rounded border" onClick={() => {
-                          setPromptContent({
-                            question: 'Are you sure to remove?',
-                            description: 'This will remove you from accessing it',
-                            buttons: ['Yes', 'No']
-                          })
-                          setToHandle('REMOVE')
-                          setSelectedInviteId(item._id)
-                        }}>Remove</button>
-                      </td>
-                    </tr>
-                  })
-                }
-              </tbody>
-            </table>
-          </div>
+            {
+              emailVerified === 'LOADING'
+                ? <div className="flex justify-center">
+                  <FontAwesomeIcon icon={faSpinner} size="xs" className="animate-spin" />
+                </div>
+                : emailVerified === 'VERIFIED'
+                  ? <>
+                    <div className="grid grid-cols-2 mb-3">
+                      <h1 className="m-0">Organization Units</h1>
+                      <div className="justify-self-end">
+                        <button className="border p-1 px-2 rounded text-sm font-light justify-self-end" onClick={() => setIsModal(true)}><FontAwesomeIcon icon={faPlus} size="sm" /> Add</button>
+                      </div>
+                    </div>
+                    <div className="overflow-x-auto">
+                      <table className="w-full whitespace-nowrap border border-slate-100 mb-4">
+                        <thead className="bg-slate-100 text-sm text-slate-600 text-left">
+                          <tr>
+                            <th className="p-2">Organization Name</th>
+                            <th className="pr-2">Organization Type</th>
+                            <th>Action</th>
+                          </tr>
+                        </thead>
+                        <tbody className="text-sm font-thin">
+                          {
+                            !confirmedOu.length
+                              ? <tr className="hover:bg-slate-50 border-b-slate-100">
+                                <td colSpan={3} className="text-center p-2">No Organization Units</td>
+                              </tr> : null
+                          }
+                          {
+                            confirmedOu.map((item: any) => {
+                              return <tr key={item._id} className="hover:bg-slate-50 border-b-slate-100">
+                                <td className="p-2">{item.organization_details_id.organization_name}</td>
+                                <td>{item.organization_details_id.organization_type_id.organization_type_name}</td>
+                                <td>
+                                  <button className="p-1 px-2 text-xs rounded border mr-2" onClick={() => {
+                                    setPromptContent({
+                                      question: 'Are you sure to switch?',
+                                      description: 'This will transfer you to another account',
+                                      buttons: ['Yes', 'No']
+                                    })
+                                    setToHandle('SWITCH')
+                                    setSelectedInviteId(item._id)
+                                  }}>Switch</button>
+                                  <button className="p-1 px-2 text-xs rounded border" onClick={() => {
+                                    setPromptContent({
+                                      question: 'Are you sure to remove?',
+                                      description: 'This will remove you from accessing it',
+                                      buttons: ['Yes', 'No']
+                                    })
+                                    setToHandle('REMOVE')
+                                    setSelectedInviteId(item._id)
+                                  }}>Remove</button>
+                                </td>
+                              </tr>
+                            })
+                          }
+                        </tbody>
+                      </table>
+                    </div>
 
-          <div className="grid grid-cols-2 mb-3">
-            <h1 className="m-0">Sent Invites</h1>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full whitespace-nowrap border border-slate-100 mb-4">
-              <thead className="bg-slate-100 text-sm text-slate-600 text-left">
-                <tr>
-                  <th className="p-2">Organization Name</th>
-                  <th>Organization Type</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody className="text-sm font-thin">
-                {
-                  !pendingOut.length
-                    ? <tr className="hover:bg-slate-50 border-b-slate-100">
-                      <td colSpan={3} className="text-center p-2">No Sent Invites</td>
-                    </tr> : null
-                }
-                {
-                  pendingOut.map((item: any) => {
-                    console.log({ item })
-                    return <tr key={item._id} className="hover:bg-slate-50 border-b-slate-100">
-                      <td className="p-2">{item.organization_details_id.organization_name}</td>
-                      <td>{item.organization_details_id.organization_type_id.organization_type_name}</td>
-                      <td>
-                        <button className="p-1 px-2 text-xs rounded border mr-2" onClick={() => {
-                          setPromptContent({
-                            question: 'Are you sure to cancel?',
-                            description: 'This will return back your invite',
-                            buttons: ['Yes', 'No']
-                          })
-                          setToHandle('CANCEL')
-                          setSelectedInviteId(item._id)
-                        }}>Cancel</button>
-                      </td>
-                    </tr>
-                  })
-                }
-              </tbody>
-            </table>
-          </div>
+                    <div className="grid grid-cols-2 mb-3">
+                      <h1 className="m-0">Sent Invites</h1>
+                    </div>
+                    <div className="overflow-x-auto">
+                      <table className="w-full whitespace-nowrap border border-slate-100 mb-4">
+                        <thead className="bg-slate-100 text-sm text-slate-600 text-left">
+                          <tr>
+                            <th className="p-2">Organization Name</th>
+                            <th>Organization Type</th>
+                            <th>Action</th>
+                          </tr>
+                        </thead>
+                        <tbody className="text-sm font-thin">
+                          {
+                            !pendingOut.length
+                              ? <tr className="hover:bg-slate-50 border-b-slate-100">
+                                <td colSpan={3} className="text-center p-2">No Sent Invites</td>
+                              </tr> : null
+                          }
+                          {
+                            pendingOut.map((item: any) => {
+                              return <tr key={item._id} className="hover:bg-slate-50 border-b-slate-100">
+                                <td className="p-2">{item.organization_details_id.organization_name}</td>
+                                <td>{item.organization_details_id.organization_type_id.organization_type_name}</td>
+                                <td>
+                                  <button className="p-1 px-2 text-xs rounded border mr-2" onClick={() => {
+                                    setPromptContent({
+                                      question: 'Are you sure to cancel?',
+                                      description: 'This will return back your invite',
+                                      buttons: ['Yes', 'No']
+                                    })
+                                    setToHandle('CANCEL')
+                                    setSelectedInviteId(item._id)
+                                  }}>Cancel</button>
+                                </td>
+                              </tr>
+                            })
+                          }
+                        </tbody>
+                      </table>
+                    </div>
 
-          <div className="grid grid-cols-2 mb-3">
-            <h1 className="m-0">Received Invites</h1>
+                    <div className="grid grid-cols-2 mb-3">
+                      <h1 className="m-0">Received Invites</h1>
+                    </div>
+                    <div className="overflow-x-auto">
+                      <table className="w-full border whitespace-nowrap border-slate-100">
+                        <thead className="bg-slate-100 text-sm text-slate-600 text-left">
+                          <tr>
+                            <th className="p-2">Organization Name</th>
+                            <th className="pr-2">Organization Type</th>
+                            <th>Action</th>
+                          </tr>
+                        </thead>
+                        <tbody className="text-sm font-thin">
+                          {
+                            !receivedOu.length
+                              ? <tr className="hover:bg-slate-50 border-b-slate-100">
+                                <td colSpan={3} className="text-center p-2">No Received Units</td>
+                              </tr> : null
+                          }
+                          {
+                            receivedOu.map((item: any) => {
+                              return <tr key={item._id} className="hover:bg-slate-50 border-b-slate-100">
+                                <td className="p-2">{item.organization_id.organization_name}</td>
+                                <td>{item.organization_id.organization_type_id.organization_type_name}</td>
+                                <td>
+                                  <button className="p-1 px-2 text-xs rounded border mr-2" onClick={() => {
+                                    setPromptContent({
+                                      question: 'Are you sure to accept?',
+                                      description: 'This will able to access your account',
+                                      buttons: ['Yes', 'No']
+                                    })
+                                    setToHandle('ACCEPT')
+                                    setSelectedInviteId(item._id)
+                                  }}>Accept</button>
+                                  <button className="p-1 px-2 text-xs rounded border mr-2" onClick={() => {
+                                    setPromptContent({
+                                      question: 'Are you sure to reject?',
+                                      description: 'This will prevent the organization from accessing your account',
+                                      buttons: ['Yes', 'No']
+                                    })
+                                    setToHandle('REJECT')
+                                    setSelectedInviteId(item._id)
+                                  }}>Reject</button>
+                                </td>
+                              </tr>
+                            })
+                          }
+                        </tbody>
+                      </table>
+                    </div>
+                  </> : <div className="flex justify-center py-10">
+                    <small>Your email is not verified yet. Please verify it first to use this feature.</small>
+                  </div>
+            }
+
           </div>
-          <div className="overflow-x-auto">
-            <table className="w-full border whitespace-nowrap border-slate-100">
-              <thead className="bg-slate-100 text-sm text-slate-600 text-left">
-                <tr>
-                  <th className="p-2">Organization Name</th>
-                  <th className="pr-2">Organization Type</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody className="text-sm font-thin">
-                {
-                  !receivedOu.length
-                    ? <tr className="hover:bg-slate-50 border-b-slate-100">
-                      <td colSpan={3} className="text-center p-2">No Received Units</td>
-                    </tr> : null
-                }
-                {
-                  receivedOu.map((item: any) => {
-                    return <tr key={item._id} className="hover:bg-slate-50 border-b-slate-100">
-                      <td className="p-2">{item.organization_id.organization_name}</td>
-                      <td>{item.organization_id.organization_type_id.organization_type_name}</td>
-                      <td>
-                        <button className="p-1 px-2 text-xs rounded border mr-2" onClick={() => {
-                          setPromptContent({
-                            question: 'Are you sure to accept?',
-                            description: 'This will able to access your account',
-                            buttons: ['Yes', 'No']
-                          })
-                          setToHandle('ACCEPT')
-                          setSelectedInviteId(item._id)
-                        }}>Accept</button>
-                        <button className="p-1 px-2 text-xs rounded border mr-2" onClick={() => {
-                          setPromptContent({
-                            question: 'Are you sure to reject?',
-                            description: 'This will prevent the organization from accessing your account',
-                            buttons: ['Yes', 'No']
-                          })
-                          setToHandle('REJECT')
-                          setSelectedInviteId(item._id)
-                        }}>Reject</button>
-                      </td>
-                    </tr>
-                  })
-                }
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-    </div>
+        </section>
+      </div>
+    </>
   );
 };
 

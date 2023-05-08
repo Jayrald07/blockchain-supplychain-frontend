@@ -14,7 +14,6 @@ export default () => {
           Authorization: `Bearer ${localStorage.getItem("token")}`
         }
       });
-      console.log(data)
       if (data.message === 'Done' && data.details !== '') {
         setChannels(data.details.message);
       } else setChannels(['Cannot be fetched']);

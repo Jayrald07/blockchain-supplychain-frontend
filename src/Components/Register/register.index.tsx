@@ -4,6 +4,14 @@ import Input from "../Input/input.index";
 import axios from "axios";
 import { host, port } from "../../utilities";
 import Alert from "../Alert/alert.index";
+import useSocket from "../../hooks/useSocket";
+import InputIndex from "../Input/input.index";
+import PromptIndex from "../Prompt/prompt.index";
+import { HttpMethod, api as globalApi } from "../../services/http";
+import cryptoRandomString from "crypto-random-string";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCheckCircle, faSpinner } from "@fortawesome/free-solid-svg-icons";
+import { useNavigate } from "react-router-dom";
 
 
 const api = axios.create({ baseURL: `${host}:${port}` });
@@ -131,7 +139,6 @@ const NodeByUser = ({ back }: any) => {
         port,
         organization_id: orgId,
       });
-      console.log(data);
       if (data.message === "Done") {
         move(step + 1);
         setTimeout(() => { location.href = "/login" }, 20000);
@@ -173,13 +180,161 @@ const NodeByUser = ({ back }: any) => {
   );
 };
 
+const NodeBySystem = ({ back }: any) => {
+  let tempToken = cryptoRandomString({ length: 10 });
+
+  const socket = useSocket(`${host}:${port}`, tempToken);
+  const [pkey, setPkey] = useState("");
+  const [chain, setChain] = useState("");
+  const [pkeyname, setPkeyname] = useState("");
+  const [orgType, setOrgType] = useState("supplier");
+  const [promptContent, setPromptContent] = useState<{ question?: string, description?: string, buttons?: string[] }>({})
+  const [submit, setSubmit] = useState(false);
+  const [responses, setResponses] = useState<{}[]>([])
+  const [finalData, setFinalData] = useState<{ ip?: string, pkey?: string, username?: string }>({});
+  const navigate = useNavigate();
+
+  const handleResponse = async (response: string) => {
+    if (response === 'Yes') {
+
+      setSubmit(true);
+
+      const response = await globalApi("/createNode", HttpMethod.POST, {
+        tempToken,
+        idName: orgType,
+        pkeyname,
+        pk: btoa(pkey),
+        fc: btoa(chain)
+      })
+
+    } else {
+      setPromptContent({});
+    }
+  }
+
+  useEffect(() => {
+    if (socket) {
+      socket.on("vm", (data) => {
+        setResponses((prevResponses) => {
+          let _r = [...prevResponses, { content: data.details, end: data.end }];
+          if (data.message === "Done" && data.end) {
+            setFinalData({
+              ip: data.ip,
+              pkey: data.pkey,
+              username: data.username
+            })
+          }
+          return _r;
+        })
+      })
+    }
+  }, [socket]);
+
+  if (submit) {
+
+    return <div className="">
+      {
+        finalData && Object.keys(finalData).length
+          ? null
+          : <>
+            <small className="font-light block mb-3">Please don't refresh or leave the tab while processing</small>
+            <ul>
+              {
+                responses.map((item: any, index: number) => {
+                  return <li className="text-xs font-light flex items-center py-2 border bg-slate-100 px-2 mb-2">
+                    <span className="mr-3">{item.content}</span>
+                    {
+                      !item.end && responses.length - 1 === index
+                        ? <FontAwesomeIcon icon={faSpinner} size="sm" className="animate-spin" />
+                        : <FontAwesomeIcon icon={faCheckCircle} size="sm" className="text-green-500" />
+                    }
+                  </li>
+                })
+              }
+            </ul>
+          </>
+      }
+      {
+        finalData && Object.keys(finalData).length
+          ? <div>
+            <small className="font-light block mb-3">Server creation done!</small>
+            <small className="font-light block mb-3">Please save the information below.</small>
+            <table className="w-full whitespace-nowrap border-slate-100 mb-3">
+              <tbody className="text-sm font-thin">
+                <tr className="bg-slate-100">
+                  <td className="font-bold p-2 text-slate-800 bg-slate-200">Username</td>
+                  <td className="p-2 text-center">{finalData.username}</td>
+                </tr>
+                <tr className="bg-slate-100">
+                  <td className="font-bold p-2 text-slate-800 bg-slate-200">IP Address</td>
+                  <td className="p-2 text-center">{finalData.ip}</td>
+                </tr>
+              </tbody>
+            </table>
+            <label className="block text-sm mb-2">SSH Key</label>
+            <textarea value={finalData.pkey} className="w-full border outline-none mb-3 overflow-x-auto whitespace-nowrap font-light text-xs p-2" rows={12}>
+
+            </textarea>
+            <div className="flex justify-end">
+              <button className="border rounded text-sm py-1 px-2" onClick={() => navigate("/login")}>Back to Login</button>
+            </div>
+          </div>
+          : null
+      }
+    </div>
+
+  }
+
+  return <div>
+    {
+      promptContent && Object.keys(promptContent).length
+        ? <PromptIndex question={promptContent.question as string} description={promptContent.description as string} buttons={promptContent.buttons as string[]} onClose={() => {
+          setPromptContent({})
+        }} handleClick={handleResponse} /> : null
+    }
+    <small className="font-light block mb-3">Please fill out all the fields.</small>
+    <form onSubmit={(e) => {
+      e.preventDefault();
+      setPromptContent({
+        question: "Are you sure to proceed?",
+        description: "Once started it cannot be stopped. Please double check your inputs",
+        buttons: ['Yes', 'No']
+      })
+    }}>
+      <InputIndex type="text" label="Private key name" value={pkeyname} handler={(e: any) => setPkeyname(e.target.value)} />
+      <label className="block text-sm mb-2">Organization Type</label>
+      <select value={orgType} required className="bg-white p-2 outline-none border w-full text-sm mb-3" onChange={(e) => setOrgType(e.target.value)}>
+        <option value="supplier">Supplier</option>
+        <option value="manufacturer">Manufacturer</option>
+        <option value="distributor">Distributor</option>
+        <option value="retailer">Retailer</option>
+      </select>
+
+      <label className="block text-sm mb-2">Chainkey Certificate</label>
+      <textarea placeholder="-----BEGIN CERTIFICATE ----- ..." value={chain} onChange={(e) => setChain(e.target.value)} className="w-full border outline-none mb-3 overflow-x-auto whitespace-nowrap font-light text-xs p-2" rows={5}>
+
+      </textarea>
+
+      <label className="block text-sm mb-2">Private Key Certificate</label>
+      <textarea placeholder="-----BEGIN RSA PRIVATE KEY----- ..." value={pkey} onChange={(e) => setPkey(e.target.value)} className="w-full border outline-none overflow-x-auto whitespace-nowrap mb-3 font-light text-xs p-2" rows={5}>
+
+      </textarea>
+      <div className="flex justify-end">
+        <button className="border rounded text-sm py-1 px-2 mr-2" onClick={back}>Back</button>
+        <button className="border rounded text-sm py-1 px-2">Create</button>
+      </div>
+    </form>
+  </div>
+
+}
+
 export default () => {
   const [provideNode, setProvideNode] = useState(-1);
 
   return (
     <>
       <div className="flex items-center justify-center h-full bg-slate-100">
-        <div className="bg-white p-5 border border-slate-200 rounded shadow-md">
+        <div className={`bg-white p-5 border border-slate-200 rounded shadow-md ${provideNode === 0 ? 'w-1/2' : ''}`}>
           <h1 className="mb-1">Register</h1>
           {provideNode == -1 ? (
             <div>
@@ -187,7 +342,11 @@ export default () => {
                 Select option below on how you wanted to create your node
               </small>
               <div className="grid font-extralight text-sm gap-3 mb-4">
-                <a role="button" className="border py-2 px-3 rounded hover:bg-slate-100">Provide node by webapp</a>
+                <a role="button" className="border py-2 px-3 rounded hover:bg-slate-100"
+                  onClick={() => {
+                    setProvideNode(0);
+                  }}
+                >Provide node by webapp</a>
                 <a
                   role="button"
                   onClick={() => {
@@ -208,7 +367,7 @@ export default () => {
           ) : null}
 
           {provideNode > -1 ? (
-            provideNode == 0 ? null : (
+            provideNode == 0 ? <NodeBySystem back={() => setProvideNode(-1)} /> : (
               <NodeByUser back={() => setProvideNode(-1)} />
             )
           ) : null}

@@ -38,7 +38,6 @@ export default () => {
           Authorization: `Basic ${localStorage.getItem("token")}`,
         },
       });
-      console.log({ data })
       if (data.message === "Done") await handleNotifs();
     }
 

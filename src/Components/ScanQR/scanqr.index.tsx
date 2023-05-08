@@ -24,7 +24,6 @@ export default () => {
         },
         async (text: any, result: any) => {
           alert(text)
-          console.log(text, result)
           // await html5qr.current.stop();
           // setIsScanned(true);
         },

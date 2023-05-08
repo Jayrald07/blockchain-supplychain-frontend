@@ -11,9 +11,10 @@ import { HttpMethod, api as globalApi } from "../../services/http";
 import { useNavigate } from "react-router-dom"
 import useChannel from "../../hooks/useChannel"
 import AlertIndex from "../Alert/alert.index"
+import useVerified from "../../hooks/useVerified"
 
 
-const TransferForm = ({ channelId, toggleModal }: { channelId: string, toggleModal: () => void }) => {
+const TransferForm = ({ channelId, toggleModal }: { channelId: string, toggleModal: (alert: { title?: string, content?: string, type?: string }) => void }) => {
 
     const [assets, setAssets] = useState([]);
     const [queueAssets, setQueueAssets] = useState<string[]>([]);
@@ -44,16 +45,20 @@ const TransferForm = ({ channelId, toggleModal }: { channelId: string, toggleMod
             setQueueAssets(prevState => {
                 let _pState = [...prevState];
                 _pState.splice(assetIndex, 1);
+                if (_pState.length === assets.length) (allCheckboxRef.current as any).checked = true;
+                else (allCheckboxRef.current as any).checked = false;
                 return _pState
             })
         } else {
             setQueueAssets(prevState => {
-                return [...prevState, value];
+                let _q = [...prevState, value];
+                if (_q.length === assets.length) (allCheckboxRef.current as any).checked = true;
+                else (allCheckboxRef.current as any).checked = false;
+                return _q;
             })
         }
 
-        if (queueAssets.length === assets.length) (allCheckboxRef.current as any).checked = true;
-        else (allCheckboxRef.current as any).checked = false;
+
     }
 
     const handleTransfer = async () => {
@@ -62,12 +67,14 @@ const TransferForm = ({ channelId, toggleModal }: { channelId: string, toggleMod
                 action: Action.TRANSFER,
                 args: {
                     assetIds: queueAssets,
-                    channelId,
-                    newOwnerMSP: "empinomanufacturerMSP"
+                    channelId
                 }
             })
+
             const response = validateAndReturn(data);
-            if (response.includes("created")) toggleModal();
+
+            if (response.message === "Done") toggleModal({ type: 'success', title: 'Success transfer initiate', content: response.details })
+            else toggleModal({ type: 'error', title: 'Error transfer initiate', content: response.details })
 
         }
     }
@@ -116,12 +123,21 @@ const TransferForm = ({ channelId, toggleModal }: { channelId: string, toggleMod
         {
             specificAsset
                 ?
-                <div className="border rounded mb-3 text-xs p-2">
-                    <p><b>Name: </b>{specificAsset.asset_name}</p>
-                    {
-                        specificAsset.tags.map((tag: any) => <p><b>{tag.key}: </b>{tag.value}</p>)
-                    }
-                </div>
+                <table className="w-full whitespace-nowrap border border-slate-100 text-left mb-3">
+                    <tbody className="text-sm font-thin text-left">
+                        <tr className="hover:bg-slate-50 border-b border-b-slate-100">
+                            <td className="bg-slate-200 font-bold p-2 w-1/12 text-slate-600">Name</td>
+                            <td className="p-2">{specificAsset.asset_name}</td>
+                        </tr>
+                        {
+                            specificAsset.tags.map((tag: any) => <tr key={tag.key} className="hover:bg-slate-50 border-b border-b-slate-100">
+                                <td className="bg-slate-200 font-bold p-2 w-1/12 text-slate-600">{tag.key}</td>
+                                <td className="p-2">{tag.value}</td>
+                            </tr>)
+                        }
+                    </tbody>
+                </table>
+
                 : null
         }
         <table className="w-full border border-slate-100 mb-5">
@@ -175,8 +191,6 @@ const TransactionDetails = ({ transaction, channelId, toggleModal }: { transacti
                 channelId
             }
         })
-
-        console.log(data)
 
         const cleaned = validateAndReturn(data);
 
@@ -376,8 +390,10 @@ const Transfer = () => {
     const [isCreateNew, setIsCreateNew] = useState(false);
     const [isViewDetails, setIsViewDetails] = useState(false);
     const [selectedTransaction, setSelectedTransaction] = useState({});
+    const [alertContent, setAlertContent] = useState<{ title?: string, content?: string, type?: string }>({})
     const navigate = useNavigate();
     const channels = useChannel();
+    const [emailVerified, reloadVar, reloader] = useVerified();
 
     const handleTransactions = () => {
         if (channel.trim()) {
@@ -388,13 +404,16 @@ const Transfer = () => {
                         channelId: channel
                     }
                 })
-                console.log(data);
                 setTransactions(validateAndReturn(data))
             })();
         }
     }
 
-    const toggleCreateNewModal = () => {
+    const toggleCreateNewModal = (alert: { title?: string, content?: string, type?: string } = {}) => {
+        if (Object.keys(alert).length) {
+            setAlertContent(alert);
+        }
+
         setIsCreateNew(!isCreateNew);
         handleTransactions()
     }
@@ -419,101 +438,121 @@ const Transfer = () => {
         handleTransactions()
     }, [channel]);
 
-    return <div className="grid grid-cols-5 h-full">
-        <Navbar />
-        <div className="col-span-5 sm:col-span-5 md:col-span-4">
-            <Headerbar />
-            <div className="px-10 lg:px-24 md:px-20 sm:px-10 xl:px-24 py-20">
+    return <>
+        {
+            emailVerified === 'NOT VERIFIED'
+                ? <div className="bg-red-500 text-center py-2">
+                    <small>Looks like your email is not verified yet. Go to your <a href="#"
+                        onClick={() => {
+                            navigate("/account");
+                        }}
+                        className="underline"
+                    >account</a> to verify</small>
+                </div>
+                : null
+        }
+        <div className="grid grid-cols-5 h-full">
+            <Navbar />
+            <div className="col-span-5 sm:col-span-5 md:col-span-4">
                 {
-                    channels.length
-                        ? <>
-                            <h1 className="text-2xl mb-5">Transfers</h1>
-
-                            <div className="grid grid-cols-4 items-center">
-                                <div className="col-span-2">
-                                    <label className="text-sm mb-2 block">Channels</label>
-                                    <ChannelIndex handleValue={setChannel} />
-                                </div>
-                                <div className="col-start-4 flex justify-end">
-                                    <button className="border py-2 px-4 rounded" onClick={toggleCreateNewModal}>
-                                        <FontAwesomeIcon icon={faPlus} size="sm" />
-                                    </button>
-                                </div>
-                            </div>
-                            {
-                                isViewDetails
-                                    ?
-                                    <Modal children={<TransactionDetails transaction={selectedTransaction} channelId={channel} toggleModal={handleToggleModalDetails} />} title="Details" toggleModal={toggleViewDtailsModal} />
-                                    : null
-                            }
-                            {
-                                isCreateNew
-                                    ?
-                                    <Modal children={<TransferForm channelId={channel} toggleModal={toggleCreateNewModal} />} title="Transfer Assets" toggleModal={toggleCreateNewModal} />
-                                    : null
-                            }
-                            <label className="text-sm mb-2 block">Transfers</label>
-                            <div className="overflow-x-auto">
-
-                                <table className="w-full whitespace-nowrap border border-slate-100 text-left">
-                                    <thead className="bg-slate-100 text-sm text-slate-600">
-                                        <tr>
-                                            <th className="p-2">Transaction ID</th>
-                                            <th>Status</th>
-                                            <th className="px-4">Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="text-sm font-thin text-left">
-                                        {
-                                            !transactions.length
-                                                ? <tr className="hover:bg-slate-50 border-b border-b-slate-100">
-                                                    <td className="p-2 text-center" colSpan={5}>No Transfers</td>
-                                                </tr> : null
-                                        }
-                                        {
-                                            transactions.map((transaction: any) => {
-                                                return (
-                                                    <tr key={transaction.id} className="hover:bg-slate-50 border-b-slate-100 text-left">
-                                                        <td className="py-2 px-2 pr-4 text-left">{transaction.id}</td>
-                                                        <td>
-                                                            <span className={`${transaction.isNewOwnerAccepted ? 'bg-gray-200' : 'bg-orange-200'} p-1 rounded`}>
-                                                                {
-                                                                    transaction.isNewOwnerAccepted && transaction.isCurrentOwnerApproved ? "For own" : null
-                                                                }
-                                                                {
-                                                                    !transaction.isNewOwnerAccepted && !transaction.isCurrentOwnerApproved ? "For Acceptance" : null
-                                                                }
-                                                                {
-                                                                    transaction.isNewOwnerAccepted && !transaction.isCurrentOwnerApproved ? "For owner approval" : null
-                                                                }
-                                                            </span>
-                                                        </td>
-                                                        <td className="px-4">
-                                                            <a href="#" className="underline hover:no-underline" onClick={() => toggleViewDtailsModal(transaction.id)}>View details</a>
-                                                        </td>
-                                                    </tr>
-                                                )
-                                            })
-                                        }
-                                    </tbody>
-                                </table>
-
-                            </div>
-
-                        </>
-                        :
-                        <div className="text-center grid ">
-                            <h1>You don't have any connections to other organizations.</h1>
-                            <small className="font-light block mb-3">Please connect to atleast 1 organization to show this page.</small>
-                            <button className="border rounded text-xs p-2 px-4 justify-self-center hover:bg-slate-100" onClick={handleRedirectConnection}>Create connection</button>
-                        </div>
+                    alertContent && Object.keys(alertContent).length
+                        ? <AlertIndex type={alertContent.type as string} title={alertContent.title as string} content={alertContent.content as string} handleClose={() => setAlertContent({})} />
+                        : null
                 }
+                <Headerbar />
+                <div className="px-10 lg:px-24 md:px-20 sm:px-10 xl:px-24 py-20">
+
+                    {
+                        channels.length && channels[0].trim()
+                            ? <>
+                                <h1 className="text-2xl mb-5">Transfers</h1>
+
+                                <div className="grid grid-cols-4 items-center">
+                                    <div className="col-span-2">
+                                        <label className="text-sm mb-2 block">Channels</label>
+                                        <ChannelIndex handleValue={setChannel} />
+                                    </div>
+                                    <div className="col-start-4 flex justify-end">
+                                        <button className="border py-2 px-4 rounded" onClick={toggleCreateNewModal}>
+                                            <FontAwesomeIcon icon={faPlus} size="sm" />
+                                        </button>
+                                    </div>
+                                </div>
+                                {
+                                    isViewDetails
+                                        ?
+                                        <Modal children={<TransactionDetails transaction={selectedTransaction} channelId={channel} toggleModal={handleToggleModalDetails} />} title="Details" toggleModal={toggleViewDtailsModal} />
+                                        : null
+                                }
+                                {
+                                    isCreateNew
+                                        ?
+                                        <Modal children={<TransferForm channelId={channel} toggleModal={toggleCreateNewModal} />} title="Transfer Assets" toggleModal={toggleCreateNewModal} />
+                                        : null
+                                }
+                                <label className="text-sm mb-2 block">Transfers</label>
+                                <div className="overflow-x-auto">
+
+                                    <table className="w-full whitespace-nowrap border border-slate-100 text-left">
+                                        <thead className="bg-slate-100 text-sm text-slate-600">
+                                            <tr>
+                                                <th className="p-2">Transaction ID</th>
+                                                <th>Status</th>
+                                                <th className="px-4">Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="text-sm font-thin text-left">
+                                            {
+                                                !transactions.length
+                                                    ? <tr className="hover:bg-slate-50 border-b border-b-slate-100">
+                                                        <td className="p-2 text-center" colSpan={5}>No Transfers</td>
+                                                    </tr> : null
+                                            }
+                                            {
+                                                transactions.map((transaction: any) => {
+                                                    return (
+                                                        <tr key={transaction.id} className="hover:bg-slate-50 border-b-slate-100 text-left">
+                                                            <td className="py-2 px-2 pr-4 text-left">{transaction.id}</td>
+                                                            <td>
+                                                                <span className={`${transaction.isNewOwnerAccepted ? 'bg-gray-200' : 'bg-orange-200'} p-1 rounded`}>
+                                                                    {
+                                                                        transaction.isNewOwnerAccepted && transaction.isCurrentOwnerApproved ? "For own" : null
+                                                                    }
+                                                                    {
+                                                                        !transaction.isNewOwnerAccepted && !transaction.isCurrentOwnerApproved ? "For Acceptance" : null
+                                                                    }
+                                                                    {
+                                                                        transaction.isNewOwnerAccepted && !transaction.isCurrentOwnerApproved ? "For owner approval" : null
+                                                                    }
+                                                                </span>
+                                                            </td>
+                                                            <td className="px-4">
+                                                                <a href="#" className="underline hover:no-underline" onClick={() => toggleViewDtailsModal(transaction.id)}>View details</a>
+                                                            </td>
+                                                        </tr>
+                                                    )
+                                                })
+                                            }
+                                        </tbody>
+                                    </table>
+
+                                </div>
+
+                            </>
+                            :
+                            <div className="text-center grid ">
+                                <h1>You don't have any connections to other organizations.</h1>
+                                <small className="font-light block mb-3">Please connect to atleast 1 organization to show this page.</small>
+                                <button className="border rounded text-xs p-2 px-4 justify-self-center hover:bg-slate-100" onClick={handleRedirectConnection}>Create connection</button>
+                            </div>
+                    }
 
 
 
+                </div>
             </div>
         </div>
-    </div>
+    </>
 
 }
 

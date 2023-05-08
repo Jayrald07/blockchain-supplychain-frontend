@@ -4,12 +4,14 @@ import NavbarIndex from "../Navbar/navbar.index"
 import axios from "axios"
 import { host, port } from "../../utilities";
 import ButtonIndex from "../Button/button.index";
-import { faLock, faPesoSign, faPlus, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { faLock, faPesoSign, faPlus, faSpinner, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import RmodalIndex from "../RModal/rmodal.index";
 import AlertIndex from "../Alert/alert.index";
 import SettingsContextIndex from "./settings.context.index";
 import PromptIndex from "../Prompt/prompt.index";
+import useVerified from "../../hooks/useVerified";
+import { useNavigate } from "react-router-dom";
 
 const api = axios.create({ baseURL: `${host}:${port}` });
 
@@ -207,6 +209,8 @@ export default () => {
   const [isAlert, setIsAlert] = useState(false);
   const [alertResponse, setAlertResponse] = useState("Done");
   const [forUpdate, setForUpdate] = useState(-1);
+  const [emailVerified, reloadVar, reloader] = useVerified();
+  const navigate = useNavigate();
 
   const handleTags = () => {
     api.get('/tag', {
@@ -254,91 +258,117 @@ export default () => {
     handleTags();
   }, []);
 
-  return <div className="grid grid-cols-5 h-full text-slate-800">
+  return <>
     {
-      isAlert ? <AlertIndex type={alertResponse === "Done" ? "success" : "error"} title={alertResponse === "Done" ? "Success!" : "Error!"} content={alertResponse === "Done" ? "Tag deleted successfully" : "Tag deletion failure"} handleClose={() => setIsAlert(!isAlert)} /> : null
-    }
-    {
-      tagModal ?
-        <SettingsContextIndex.Provider value={handleTags}>
-          <RmodalIndex title="Add Metadata" Component={<TagMaker data={forUpdate >= 0 ? tags[forUpdate] : null} />} onClose={() => {
-            setTagModal(!tagModal)
-            setForUpdate(-1)
-          }} />
-        </SettingsContextIndex.Provider>
+      emailVerified === 'NOT VERIFIED'
+        ? <div className="bg-red-500 text-center py-2">
+          <small>Looks like your email is not verified yet. Go to your <a href="#"
+            onClick={() => {
+              navigate("/account");
+            }}
+            className="underline"
+          >account</a> to verify</small>
+        </div>
         : null
     }
-    <NavbarIndex />
-    <div className="col-span-5 sm:col-span-5 md:col-span-4">
-      <HeaderbarIndex />
+    <div className="grid grid-cols-5 h-full text-slate-800">
       {
-        isPrompt ?
-          <PromptIndex question="Are you sure to delete this tag?" description="This cannot be undone" buttons={["OK"]} onClose={() => setIsPrompt(!isPrompt)} handleClick={handlePromptResponse} /> : null
+        isAlert ? <AlertIndex type={alertResponse === "Done" ? "success" : "error"} title={alertResponse === "Done" ? "Success!" : "Error!"} content={alertResponse === "Done" ? "Tag deleted successfully" : "Tag deletion failure"} handleClose={() => setIsAlert(!isAlert)} /> : null
       }
-      <div className="px-10 lg:px-44 md:px-20 sm:px-10 xl:px-56 py-20">
-        <h1 className="text-2xl mb-5">Settings</h1>
-        <div className="flex items-center mb-2">
-          <h2 className="w-full">Metadata</h2>
-          <ButtonIndex handleClick={() => setTagModal(!tagModal)} Icon={<FontAwesomeIcon icon={faPlus} size="xs" />} />
+      {
+        tagModal ?
+          <SettingsContextIndex.Provider value={handleTags}>
+            <RmodalIndex title="Add Metadata" Component={<TagMaker data={forUpdate >= 0 ? tags[forUpdate] : null} />} onClose={() => {
+              setTagModal(!tagModal)
+              setForUpdate(-1)
+            }} />
+          </SettingsContextIndex.Provider>
+          : null
+      }
+      <NavbarIndex />
+      <div className="col-span-5 sm:col-span-5 md:col-span-4">
+        <HeaderbarIndex />
+        {
+          isPrompt ?
+            <PromptIndex question="Are you sure to delete this tag?" description="This cannot be undone" buttons={["OK"]} onClose={() => setIsPrompt(!isPrompt)} handleClick={handlePromptResponse} /> : null
+        }
+        <div className="px-10 lg:px-44 md:px-20 sm:px-10 xl:px-56 py-20">
+          <h1 className="text-2xl mb-5">Settings</h1>
+
+          {
+            emailVerified === 'LOADING'
+              ? <div className="flex justify-center">
+                <FontAwesomeIcon icon={faSpinner} size="xs" className="animate-spin" />
+              </div>
+              : emailVerified === 'VERIFIED'
+                ? <>
+                  <div className="flex items-center mb-2">
+                    <h2 className="w-full">Metadata</h2>
+                    <ButtonIndex handleClick={() => setTagModal(!tagModal)} Icon={<FontAwesomeIcon icon={faPlus} size="xs" />} />
+
+                  </div>
+                  <div className="overflow-x-auto">
+
+
+                    <table className="w-full whitespace-nowrap border border-slate-100">
+                      <thead className="bg-slate-100 text-sm text-slate-600 text-left">
+                        <tr>
+                          <th className="p-2">Key</th>
+                          <th>Type</th>
+                          <th>Default</th>
+                          <th>Options</th>
+                          <th className="text-center">Action</th>
+                        </tr>
+                      </thead>
+                      <tbody className="text-sm font-thin">
+                        {
+                          !tags.length
+                            ? <tr className="hover:bg-slate-50 border-b border-b-slate-100">
+                              <td className="p-2 text-center" colSpan={5}>No Metadata</td>
+                            </tr> : null
+                        }
+                        {
+                          tags.map((tag: any, index: number) => {
+                            return <tr key={tag.tag_key} className={`${tag.organization_id === "SYSTEM" ? "bg-slate-50" : ''} hover:bg-slate-50 border-b border-b-slate-100`}>
+                              <td className="py-2 px-2">{tag.tag_key}</td>
+                              <td>{tag.tag_type}</td>
+                              <td>{tag.tag_default_value ? tag.tag_default_value : "NONE"}</td>
+                              <td>
+                                {
+                                  tag.tag_options.length ?
+                                    <select required className="py-2 px-3 text-sm w-full bg-transparent  outline-none font-thin"> {
+                                      tag.tag_options.map((tag_option: any) => {
+                                        return <option key={tag_option} value={tag_option}>{tag_option}</option>
+                                      })
+                                    }
+                                    </select>
+                                    : "NONE"
+                                }
+                              </td>
+                              <td className="text-center">
+                                {
+                                  tag.organization_id !== "SYSTEM" ?
+                                    <>
+                                      <a href="#" className="border rounded-sm py-1 px-2 hover:bg-slate-100 mr-2" onClick={() => handleTagUpdate(index)}>Update</a>
+                                      <a href="#" className="border rounded-sm py-1 px-2 hover:bg-slate-100" onClick={() => handleTagDelete(tag._id)}>Delete</a>
+                                    </>
+                                    : <span className="text-slate-500"><FontAwesomeIcon icon={faLock} size="xs" /></span>
+                                }
+                              </td>
+                            </tr>
+                          })
+                        }
+                      </tbody>
+                    </table>
+                  </div>
+                </> : <div className="flex justify-center py-10">
+                  <small>Your email is not verified yet. Please verify it first to use this feature.</small>
+                </div>
+          }
+
+
 
         </div>
-        <div className="overflow-x-auto">
-
-
-          <table className="w-full whitespace-nowrap border border-slate-100">
-            <thead className="bg-slate-100 text-sm text-slate-600 text-left">
-              <tr>
-                <th className="p-2">Key</th>
-                <th>Type</th>
-                <th>Default</th>
-                <th>Options</th>
-                <th className="text-center">Action</th>
-              </tr>
-            </thead>
-            <tbody className="text-sm font-thin">
-              {
-                !tags.length
-                  ? <tr className="hover:bg-slate-50 border-b border-b-slate-100">
-                    <td className="p-2 text-center" colSpan={5}>No Metadata</td>
-                  </tr> : null
-              }
-              {
-                tags.map((tag: any, index: number) => {
-                  return <tr key={tag.tag_key} className={`${tag.organization_id === "SYSTEM" ? "bg-slate-50" : ''} hover:bg-slate-50 border-b border-b-slate-100`}>
-                    <td className="py-2 px-2">{tag.tag_key}</td>
-                    <td>{tag.tag_type}</td>
-                    <td>{tag.tag_default_value ? tag.tag_default_value : "NONE"}</td>
-                    <td>
-                      {
-                        tag.tag_options.length ?
-                          <select required className="py-2 px-3 text-sm w-full bg-transparent  outline-none font-thin"> {
-                            tag.tag_options.map((tag_option: any) => {
-                              return <option key={tag_option} value={tag_option}>{tag_option}</option>
-                            })
-                          }
-                          </select>
-                          : "NONE"
-                      }
-                    </td>
-                    <td className="text-center">
-                      {
-                        tag.organization_id !== "SYSTEM" ?
-                          <>
-                            <a href="#" className="border rounded-sm py-1 px-2 hover:bg-slate-100 mr-2" onClick={() => handleTagUpdate(index)}>Update</a>
-                            <a href="#" className="border rounded-sm py-1 px-2 hover:bg-slate-100" onClick={() => handleTagDelete(tag._id)}>Delete</a>
-                          </>
-                          : <span className="text-slate-500"><FontAwesomeIcon icon={faLock} size="xs" /></span>
-                      }
-                    </td>
-                  </tr>
-                })
-              }
-            </tbody>
-          </table>
-
-        </div>
-
       </div>
-    </div>
-  </div >
+    </div ></>
 }

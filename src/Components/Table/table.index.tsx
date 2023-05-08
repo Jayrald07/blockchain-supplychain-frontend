@@ -19,7 +19,6 @@ export default ({
   handleRemove?: any;
 }) => {
 
-  console.log(rows);
   return (
     <section className="w-full overflow-x-auto">
       <table className="w-full border border-slate-100 whitespace-nowrap">
