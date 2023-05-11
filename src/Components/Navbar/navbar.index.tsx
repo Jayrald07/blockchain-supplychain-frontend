@@ -81,11 +81,11 @@ export default () => {
   useEffect(() => { }, [isNavOpen]);
 
   return (
-    <div className={`top-0 navbar-container fixed ${isSideOpen ? 'w-full' : ''} h-full`} onClick={handleBackClick}>
-      <div className={`${isSideOpen ? 'left-48' : 'left-0'} ${isSideOpen ? '' : 'rounded-tl-none rounded-bl-none border-l-0'} absolute z-50 bg-white border rounded shadow-md block top-20 text-sm p-2 px-3 cursor-pointer hover:bg-slate-100`} onClick={handleSidebarToggle}>
+    <div className={`top-0 navbar-container ${isSideOpen ? 'w-full block' : 'w-0'}  h-full fixed sm:relative md:relative overflow-x-hidden sm:w-auto md:w-auto`} onClick={handleBackClick}>
+      <div className={`fixed ${isSideOpen ? 'left-52' : 'rounded rounded-tl-none rounded-bl-none border-l-0'} sm:hidden z-50 bg-white border rounded shadow-md block top-20 text-sm p-2 px-3 cursor-pointer hover:bg-slate-100`} onClick={handleSidebarToggle}>
         <FontAwesomeIcon icon={faBars} size="sm" />
       </div>
-      <nav onClick={(e) => e.stopPropagation()} className={`fixed h-full shadow-xl ${isSideOpen ? '' : 'hidden'} ${isSideOpen ? 'shadow-xl' : ''} overflow-x-hidden bg-slate-700 md:grid ${isSideOpen ? '' : 'sm:hidden'}`} ref={navbar}>
+      <nav onClick={(e) => e.stopPropagation()} className={`h-full bg-slate-700 fixed sm:relative md:relative sm:w-auto md:w-auto ${isSideOpen ? 'w-auto block' : 'w-0'} overflow-x-hidden`} ref={navbar}>
         <ol>
           {/* <li ref={firstList}>
           <img src={Logo} draggable="false" />
@@ -100,32 +100,32 @@ export default () => {
             </a>
           </li>
           <li>
-            <a className={`p-5 text-white flex gap-x-4 items-center ${location.pathname === "/dashboard" ? 'bg-slate-600' : ''} hover:bg-slate-600`} href="#" onClick={() => navigate("/dashboard")} ref={dashboard}>
+            <a className={`p-5 text-white flex gap-x-4 items-center ${location.pathname === "/dashboard" ? 'bg-slate-600' : ''} hover:bg-slate-600`} href="/dashboard" ref={dashboard}>
               <FontAwesomeIcon icon={faTableColumns} /> <span>Dashboard</span>
             </a>
           </li>
           <li>
-            <a className={`p-5 text-white flex gap-x-4 items-center ${location.pathname === "/asset" ? 'bg-slate-600' : ''} hover:bg-slate-600`} href="#" onClick={() => navigate("/asset")} ref={asset}>
+            <a className={`p-5 text-white flex gap-x-4 items-center ${location.pathname === "/asset" ? 'bg-slate-600' : ''} hover:bg-slate-600`} href="/asset" ref={asset}>
               <FontAwesomeIcon icon={faDatabase} /> <span>Manage Assets</span>
             </a>
           </li>
           <li>
-            <a className={`p-5 text-white flex gap-x-4 items-center ${location.pathname === "/transfer" ? 'bg-slate-600' : ''} hover:bg-slate-600`} href="#" onClick={() => navigate("/transfer")} ref={transfer}>
-              <FontAwesomeIcon icon={faArrowRight} /> <span>Transfers</span>
+            <a className={`p-5 text-white flex gap-x-4 items-center ${location.pathname === "/transfer" ? 'bg-slate-600' : ''} hover:bg-slate-600`} href="/transfer" ref={transfer}>
+              <FontAwesomeIcon icon={faArrowRight} /> <span>Transaction</span>
             </a>
           </li>
           <li>
-            <a className={`p-5 text-white flex gap-x-4 items-center ${location.pathname === "/transaction" ? 'bg-slate-600' : ''} hover:bg-slate-600`} href="#" onClick={() => navigate("/transaction")} ref={transaction}>
-              <FontAwesomeIcon icon={faChartLine} /> <span>Transactions</span>
+            <a className={`p-5 text-white flex gap-x-4 items-center ${location.pathname === "/transaction" ? 'bg-slate-600' : ''} hover:bg-slate-600`} href="/transaction" ref={transaction}>
+              <FontAwesomeIcon icon={faChartLine} /> <span>Transaction Logs</span>
             </a>
           </li>
           <li>
-            <a className={`p-5 text-white flex gap-x-4 items-center ${location.pathname === "/connections" ? 'bg-slate-600' : ''} hover:bg-slate-600`} href="#" onClick={() => navigate("/connections")} ref={connections}>
+            <a className={`p-5 text-white flex gap-x-4 items-center ${location.pathname === "/connections" ? 'bg-slate-600' : ''} hover:bg-slate-600`} href="/connections" ref={connections}>
               <FontAwesomeIcon icon={faChain} /> <span>Connections</span>
             </a>
           </li>
           <li>
-            <a className={`p-5 text-white flex gap-x-4 items-center ${location.pathname === "/settings" ? 'bg-slate-600' : ''} hover:bg-slate-600`} href="#" onClick={() => navigate("/settings")} ref={connections}>
+            <a className={`p-5 text-white flex gap-x-4 items-center ${location.pathname === "/settings" ? 'bg-slate-600' : ''} hover:bg-slate-600`} href="/settings" ref={connections}>
               <FontAwesomeIcon icon={faCog} /> <span>Settings</span>
             </a>
           </li>

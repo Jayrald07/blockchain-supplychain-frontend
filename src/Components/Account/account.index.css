@@ -10,12 +10,6 @@
   margin: 50px 10%;
 }
 
-.account-bar {
-  background-color: var(--dark-blue);
-  padding: 10px;
-  border-radius: 4px;
-}
-
 .account-bar h4 {
   margin: 0;
   color: var(--light-gray);

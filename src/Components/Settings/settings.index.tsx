@@ -262,7 +262,7 @@ export default () => {
     {
       emailVerified === 'NOT VERIFIED'
         ? <div className="bg-red-500 text-center py-2">
-          <small>Looks like your email is not verified yet. Go to your <a href="#"
+          <small className="text-white">Looks like your email is not verified yet. Go to your <a href="#"
             onClick={() => {
               navigate("/account");
             }}

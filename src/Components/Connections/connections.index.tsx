@@ -193,7 +193,7 @@ const Connection = () => {
         {
             emailVerified === 'NOT VERIFIED'
                 ? <div className="bg-red-500 text-center py-2">
-                    <small>Looks like your email is not verified yet. Go to your <a href="#"
+                    <small className="text-white">Looks like your email is not verified yet. Go to your <a href="#"
                         onClick={() => {
                             navigate("/account");
                         }}
@@ -346,17 +346,7 @@ const Connection = () => {
                                                                     })
                                                                 }} role="button" className="underline hover:no-underline py-2 items-center">
                                                                     Connect
-                                                                </a> <a onClick={() => {
-                                                                    setPromptContent({
-                                                                        question: 'Are you sure to cancel this connection?',
-                                                                        description: 'This prevents the system to process the connection',
-                                                                        buttons: ['Yes', 'No'],
-                                                                        type: 'CANCEL',
-                                                                        orgId: item._id
-                                                                    })
-                                                                }} role="button" className="underline hover:no-underline py-2 px-2 items-center">
-                                                                        Cancel
-                                                                    </a></> : null
+                                                                </a></> : null
                                                         }
                                                     </td>
                                                 </tr>

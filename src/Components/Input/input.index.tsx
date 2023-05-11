@@ -8,6 +8,7 @@ type InputProps = {
   handler: React.ChangeEventHandler;
   value: string;
   disabled?: boolean;
+  description?: string
 };
 
 export default ({
@@ -18,10 +19,14 @@ export default ({
   handler,
   value = "",
   disabled = false,
+  description = ""
 }: InputProps) => {
   return (
     <section className="mb-4">
-      <label className="text-sm mb-2 block">{label}</label>
+      <div className="mb-2">
+        <label className="text-sm block">{label}</label>
+        <small className="font-light">{description}</small>
+      </div>
       <div className="border flex flex-item">
         {icon && <div className="w-10 flex items-center justify-center bg-slate-200 text-slate-600">{icon}</div>}
 

@@ -5,6 +5,7 @@ import "./asset.index.css";
 import {
   faChevronDown,
   faPlus,
+  faQrcode,
   faSearch,
   faSpinner,
   faTrash,
@@ -25,6 +26,8 @@ import { KeyValue, Response, Tag } from "../../typedef";
 import { useNavigate } from "react-router-dom";
 import useChannel from "../../hooks/useChannel";
 import useVerified from "../../hooks/useVerified";
+import { HttpMethod, api as globalApi } from "../../services/http";
+import PromptIndex from "../Prompt/prompt.index";
 
 
 const NewAsset = ({
@@ -50,23 +53,39 @@ const NewAsset = ({
     e.preventDefault();
     setIsSubmission(true)
     if (action === "update") {
-      const { data } = await api.post("/chaincode", {
-        asset_id: assetId,
+      console.log({
         asset_name: assetName,
+        tags: selectedTags,
         asset_description: description,
-        channelId
+        channelId,
+        assetId
+      })
+      const { data } = await api.post("/chaincode", {
+        action: Action.UPDATE_ASSET,
+        args: {
+          asset_name: assetName,
+          tags: selectedTags,
+          asset_description: description,
+          assetId,
+          channelId
+        }
       }, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`
         }
       });
 
-      if (data.message === "Asset updated!") {
-        setAssetName("");
-        setDescription("");
-        handleClose('returned');
-        setIsSubmission(false);
-        setSelectedTags([]);
+      let response = validateAndReturn(data)
+
+      if (response.message === "Done") {
+        response = JSON.parse(response.details)
+        if (response.message === "Done") {
+          setAssetName("");
+          setDescription("");
+          handleClose('returned');
+          setIsSubmission(false);
+          setSelectedTags([]);
+        }
       }
     } else {
       const { data } = await api.post(
@@ -189,9 +208,10 @@ const NewAsset = ({
               Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
           })
-
-        setSelectedTags(JSON.parse(dataTag.details.details.details.tags))
-
+        console.log({ dataTag })
+        let _tags = validateAndReturn(dataTag).tags
+        console.log(_tags)
+        setSelectedTags(typeof _tags === "object" ? _tags : JSON.parse(_tags));
       } else {
         setAssetName("");
         setDescription("");
@@ -288,6 +308,10 @@ const Asset = () => {
   const navigate = useNavigate();
   const channels = useChannel();
   const [emailVerified, reloadVar, reloader] = useVerified();
+  const [promptContent, setPromptContent] = useState<{ question?: string, description?: string, buttons?: string[], assetId?: string }>({})
+  const [alertContent, setAlertContent] = useState<{ title?: string, description?: string, type?: string }>({})
+  const [selectedAssetIds, setSelectedAssetIds] = useState<string[]>([]);
+  const [generating, setGenerating] = useState(false);
 
   const api = axios.create({ baseURL: `${host}:${port}` });
 
@@ -303,36 +327,126 @@ const Asset = () => {
     setIsModal(true);
   };
 
+  const handleRemove = (assetId: string) => {
+    setPromptContent({
+      question: "Are you sure to delete?",
+      description: "This will disassociate the asset to your account",
+      buttons: ['Yes', 'No'],
+      assetId
+    })
+  }
+
+  const handlePromptResponse = async (response: string) => {
+    if (response === 'Yes') {
+      const response = await globalApi("/chaincode", HttpMethod.POST, {
+        action: Action.REMOVE_ASSET,
+        args: {
+          channelId: channel,
+          assetIds: [promptContent.assetId]
+        }
+      })
+      console.log({
+        action: Action.REMOVE_ASSET,
+        args: {
+          channelId: channel,
+          assetIds: [promptContent.assetId]
+        }
+      })
+      const cleaned = validateAndReturn(response)
+
+      if (cleaned.message === "Done") {
+        let chaincodeResponse = JSON.parse(cleaned.details);
+        if (chaincodeResponse.message === "Done") {
+          setAlertContent({
+            title: 'Success removing',
+            description: chaincodeResponse.details,
+            type: 'success'
+          })
+          handleAssets();
+        } else {
+          setAlertContent({
+            title: 'Error removing',
+            description: chaincodeResponse.details,
+            type: 'error'
+          })
+        }
+      } else {
+        setAlertContent({
+          title: 'Error removing',
+          description: 'Asset has failed disassociating to your account',
+          type: 'error'
+        })
+      }
+      setPromptContent({})
+    } else setPromptContent({})
+  }
+
   const handleSearch = async (e: any) => {
     const value = e.target.value;
-    // const { data } = await api.get(`/search/asset/${value ? value : "all"}`, {
-    //   headers: {
-    //     Authorization: `Bearer ${localStorage.getItem("token")}`
-    //   }
-    // });
-    // setAssets(data.asset);
     setSearchText(value);
+    handleAssets(value);
+
   };
 
   const handleRedirectConnection = () => {
     navigate("/connections")
   }
 
+  const handleAssets = (term: string = '') => {
+    api.post('/chaincode', {
+      'action': Action.ASSETS,
+      'args': {
+        'channelId': channel,
+        term,
+      }
+    }, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`
+      }
+    }).then(({ data }) => {
+      if (data.message === 'Done') setAssets(data.details.details)
+    }).catch(console.error);
+  }
+
+  const generateQrs = async () => {
+    if (!generating) {
+      setGenerating(true);
+      const response = await globalApi("/chaincode", HttpMethod.POST, {
+        action: Action.PDF,
+        args: {
+          channelId: channel,
+          assetIds: selectedAssetIds
+        }
+      })
+      let val = validateAndReturn(response);
+
+      const url = `data:application/pdf;base64,${val.details}`
+      const link = document.createElement('a');
+      link.setAttribute('download', "Asset QR Codes");
+      link.setAttribute('href', url);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      setGenerating(false);
+    }
+  }
+
+  const handleCheck = (assetId: string, checked: boolean) => {
+    setSelectedAssetIds(prevState => {
+
+      if (checked) {
+        return [assetId, ...prevState];
+      } else {
+        return prevState.filter(item => item !== assetId)
+      }
+
+    })
+  }
 
   useEffect(() => {
     if (channel.trim()) {
-      api.post('/chaincode', {
-        'action': Action.ASSETS,
-        'args': {
-          'channelId': channel
-        }
-      }, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`
-        }
-      }).then(({ data }) => {
-        if (data.message === 'Done') setAssets(data.details.details)
-      }).catch(console.error);
+      handleAssets()
     }
   }, [channel, isModal]);
 
@@ -350,9 +464,20 @@ const Asset = () => {
   return (
     <>
       {
+        alertContent && Object.keys(alertContent).length
+          ? <AlertIndex title={alertContent.title as string} content={alertContent.description as string} type={alertContent.type as string} handleClose={() => {
+            setAlertContent({})
+          }} />
+          : null
+      }
+      {
+        promptContent && Object.keys(promptContent).length
+          ? <PromptIndex question={promptContent.question as string} description={promptContent.description as string} buttons={promptContent.buttons as string[]} onClose={() => setPromptContent({})} handleClick={handlePromptResponse} /> : null
+      }
+      {
         emailVerified === 'NOT VERIFIED'
           ? <div className="bg-red-500 text-center py-2">
-            <small>Looks like your email is not verified yet. Go to your <a href="#"
+            <small className="text-white">Looks like your email is not verified yet. Go to your <a href="#"
               onClick={() => {
                 navigate("/account");
               }}
@@ -372,7 +497,7 @@ const Asset = () => {
                 ?
                 <>
                   <h1 className="text-2xl mb-5">Manage Assets</h1>
-                  <section className="grid grid-cols-4 items-end gap-x-4">
+                  <section className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-4 items-end gap-x-4">
                     <InputIndex
                       icon={<FontAwesomeIcon icon={faSearch} />}
                       label="Search Asset"
@@ -381,10 +506,21 @@ const Asset = () => {
                       value={searchText}
                       handler={handleSearch}
                     />
-                    <section className="col-span-2">
+                    <section>
                       <label className="text-sm mb-2 block">Channels</label>
                       <ChannelIndex handleValue={(value) => setChannel(value)} />
                     </section>
+                    <button
+                      className="border rounded py-2 px-3.5 hover:bg-gray-100 text-xs mb-4"
+                      onClick={generateQrs}
+                    >
+                      {
+                        !generating
+                          ? <><span>Generate QR Codes</span> <FontAwesomeIcon icon={faQrcode} /></>
+                          : <FontAwesomeIcon icon={faSpinner} className="animate-spin" />
+                      }
+
+                    </button>
                     <button
                       className="border rounded py-2 px-3.5 hover:bg-gray-100 text-xs mb-4"
                       onClick={() => {
@@ -399,6 +535,8 @@ const Asset = () => {
                     rows={assets}
                     handleUpdate={handleUpdate}
                     handleView={handleView}
+                    handleRemove={handleRemove}
+                    handleCheck={handleCheck}
                   />
                 </>
                 :

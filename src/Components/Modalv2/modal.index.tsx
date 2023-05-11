@@ -11,7 +11,7 @@ export const Modal = ({ title, children, toggleModal, size }: any) => {
         <div className={`bg-white border w-full sm:w-2/4 md:w-${_size}/12 lg:w-2/4  rounded w-${_size}/12 shadow-lg`}>
             <div className="flex p-4 border-b items-center">
                 <h1 className="w-full">{title}</h1>
-                <FontAwesomeIcon role="button" icon={faClose} onClick={toggleModal} />
+                <FontAwesomeIcon role="button" icon={faClose} onClick={() => toggleModal()} />
             </div>
             <div className="p-4">
                 {children}

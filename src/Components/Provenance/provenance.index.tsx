@@ -3,30 +3,27 @@ import Logo from "../../assets/logo.png";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHouse } from "@fortawesome/free-solid-svg-icons";
 
-export default () => {
+export default ({ assetDetail }: { assetDetail: any }) => {
+
   return (
     <section className="p-10">
       <div className="mb-10">
         <img src={Logo} className="w-32 mb-2" />
         <div>
-          {/* <small className="font-light">Securing your transfers</small> */}
+          <h1 className="font-bold">Item: <span className="font-light">{assetDetail.asset_name}</span></h1>
         </div>
       </div>
-      {[
-        { type: "Retailer", name: "MERCURY DRUG" },
-        { type: "Distributor", name: "CVK Pharma and Medical Supplies Distribution" },
-        { type: "Manufacturer", name: "Unilab, Inc." },
-        { type: "Supplier", name: "RHYLEX PHARMACEUTICAL" },
-      ].map((item) => {
+      {assetDetail.history.map((item: any) => {
         return (
-          <div key={item.type} className="flex gap-x-2 mb-11 relative">
+          <div key={item._id} className="flex gap-x-2 mb-11 relative">
             <span className="w-1 h-14 left-2 top-7 absolute bg-slate-200"></span>
             <span>
               <FontAwesomeIcon icon={faHouse} className="text-blue-900" />
             </span>
-            <div>
-              <h1>{item.name}</h1>
-              <small className="font-light text-xs">{item.type}</small>
+            <div className="justify-start">
+              <h1>{item.organization_display_name ? item.organization_display_name : item.organization_name}</h1>
+              <small className="font-light text-xs block">{new Date(item.timestamp * 1000).toLocaleString()}</small>
+              <small className="font-light text-xs p-1 px-2 bg-slate-200 rounded">{item.organization_type_id.organization_type_name}</small>
             </div>
           </div>
         );

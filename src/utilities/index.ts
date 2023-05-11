@@ -12,7 +12,14 @@ export enum Action {
     TRANSFER = 'TRANSFER',
     ACCEPT = 'ACCEPT',
     TRANSFER_NOW = 'TRANSFER_NOW',
-    OWN_ASSET = 'OWN_ASSET'
+    OWN_ASSET = 'OWN_ASSET',
+    UPDATE_ASSET = 'UPDATE_ASSET',
+    REMOVE_ASSET = 'REMOVE_ASSET',
+    CANCEL = 'CANCEL',
+    PDF = 'PDF',
+    RETURN = 'RETURN',
+    PULL = 'PULL',
+    REJECT = 'REJECT'
 }
 
 export interface HttpResposne {

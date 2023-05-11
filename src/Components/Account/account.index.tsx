@@ -40,6 +40,7 @@ const Account = () => {
   const [emailRefer, setEmailRefer] = useState("");
   const [emailVerified, reloadVar, reloader] = useVerified();
   const navigate = useNavigate();
+  const [displayName, setDisplayName] = useState("");
 
   const api = axios.create({ baseURL: `${host}:${port}` });
 
@@ -49,6 +50,7 @@ const Account = () => {
       {
         organization_address: address,
         organization_phone: phone,
+        organization_display_name: displayName
       },
       {
         headers: {
@@ -346,6 +348,7 @@ const Account = () => {
       setIsEmailVerified(data.organization_email_is_verified);
       setEmailStatus(data.emailStatus || 'NONE')
       setEmailRefer(data.organization_email)
+      setDisplayName(data.organization_display_name)
     }
   }
 
@@ -383,7 +386,7 @@ const Account = () => {
       {
         emailVerified === 'NOT VERIFIED'
           ? <div className="bg-red-500 text-center py-2">
-            <small>Looks like your email is not verified yet. Go to your <a href="#"
+            <small className="text-white">Looks like your email is not verified yet. Go to your <a href="#"
               onClick={() => {
                 navigate("/account");
               }}
@@ -416,17 +419,24 @@ const Account = () => {
             : null
         }
         <NavbarIndex />
-        <section className={`col-span-5 sm:col-span-5 md:col-span-5`}>
+        <section className={`col-span-5 sm:col-span-5 md:col-span-4`}>
           <HeaderbarIndex />
           <div className="px-10 lg:px-28 md:px-20 sm:px-10 xl:px-24 pt-20 mb-10">
             <h1>
-              Account / {organizationName} <small className="badge">{type}</small>
+              Account / {organizationName} <small className="p-1 px-2 font-light text-xs bg-slate-100 rounded">{type}</small>
             </h1>
-            <section className="account-bar">
+            <section className="py-3">
               <h4>Contact Information</h4>
             </section>
-            <section className="account-profile">
+            <section className="mb-4 grid grid-cols-1 sm:grid-cols-1 md:grid-cols-3">
               <div>
+                <InputIndex
+                  label="Display Name"
+                  type="text"
+                  value={displayName}
+                  handler={(e: any) => setDisplayName(e.target.value)}
+                  description={`This will be displayed on the scanned QR. Otherwise, it will display ${organizationName}`}
+                />
                 <InputIndex
                   label="Address"
                   type="text"
