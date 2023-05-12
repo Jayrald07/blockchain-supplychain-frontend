@@ -17,6 +17,7 @@ import ChannelIndex from "../Channel/channel.index";
 import useVerified from "../../hooks/useVerified";
 import { useNavigate } from "react-router-dom";
 import { HttpMethod, api as globalApi } from "../../services/http";
+import AlertIndex from "../Alert/alert.index";
 
 const Dashboard = () => {
   const [assetCount, setAssetCount] = useState(0);
@@ -32,6 +33,7 @@ const Dashboard = () => {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [canv, setCanv] = useState<Chart>()
+  const [alertContent, setAlertContent] = useState<{ title?: string, content?: string, type?: string }>({})
 
   const api = axios.create({ baseURL: `${host}:${port}` });
 
@@ -62,62 +64,64 @@ const Dashboard = () => {
 
     datavals[2] = transactions.length - datavals.reduce((a, b) => a + b);
 
+    console.log(datavals)
+
     if (ctxRef.current) {
 
-      if (transactions.length) {
-        if (canv) {
-          canv.destroy();
-        }
-        let value = new Chart(ctxRef.current, {
-          type: 'bar',
-          data: {
-            labels: ['Returned', 'Rejected', 'Done', 'Cancelled'],
-            datasets: [{
-              data: datavals,
-              borderWidth: 1,
-              backgroundColor: [
-                'rgba(255, 99, 132, 0.2)',
-                'rgba(255, 99, 132, 0.2)',
-                'rgba(75, 192, 192, 0.2)',
-                'rgba(201, 203, 207, 0.2)'
-              ]
-            }]
-          },
-          options: {
-            responsive: true,
-            plugins: {
-              legend: {
-                display: false
-              }
+      if (canv) {
+        canv.destroy();
+      }
+      let value = new Chart(ctxRef.current, {
+        type: 'bar',
+        data: {
+          labels: ['Returned', 'Rejected', 'Done', 'Cancelled'],
+          datasets: [{
+            data: datavals,
+            borderWidth: 1,
+            backgroundColor: [
+              'rgba(255, 99, 132, 0.2)',
+              'rgba(255, 99, 132, 0.2)',
+              'rgba(75, 192, 192, 0.2)',
+              'rgba(201, 203, 207, 0.2)'
+            ]
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              display: false
             }
           }
-        });
-        setCanv(value);
-        // new Chart(lineRef.current, {
-        //   type: 'bar',
-        //   data: {
-        //     labels: ['Returned', 'Rejected', 'Done', 'Cancelled'],
-        //     datasets: [{
-        //       data: datavals,
-        //       borderWidth: 1,
-        //       backgroundColor: [
-        //         'rgba(255, 99, 132, 0.2)',
-        //         'rgba(255, 99, 132, 0.2)',
-        //         'rgba(75, 192, 192, 0.2)',
-        //         'rgba(201, 203, 207, 0.2)'
-        //       ]
-        //     }]
-        //   },
-        //   options: {
-        //     responsive: true,
-        //     plugins: {
-        //       legend: {
-        //         display: false
-        //       }
-        //     }
-        //   }
-        // });
-      }
+        }
+      });
+      setCanv(value);
+      // new Chart(lineRef.current, {
+      //   type: 'bar',
+      //   data: {
+      //     labels: ['Returned', 'Rejected', 'Done', 'Cancelled'],
+      //     datasets: [{
+      //       data: datavals,
+      //       borderWidth: 1,
+      //       backgroundColor: [
+      //         'rgba(255, 99, 132, 0.2)',
+      //         'rgba(255, 99, 132, 0.2)',
+      //         'rgba(75, 192, 192, 0.2)',
+      //         'rgba(201, 203, 207, 0.2)'
+      //       ]
+      //     }]
+      //   },
+      //   options: {
+      //     responsive: true,
+      //     plugins: {
+      //       legend: {
+      //         display: false
+      //       }
+      //     }
+      //   }
+      // });
+
+
     }
   }, [ctxRef, lineRef, transactions]);
 
@@ -146,6 +150,31 @@ const Dashboard = () => {
 
         }).catch(console.error);
 
+        if (startDate && endDate) {
+          if (startDate > endDate) {
+            setAlertContent({
+              title: 'Invalid time range',
+              content: 'Please fix the start date and end date',
+              type: "error"
+            })
+          } else {
+
+            const tx: HttpResposne = await globalApi("/chaincode", HttpMethod.POST, {
+              action: Action.TRANSACTIONS,
+              args: {
+                channelId,
+                startDate,
+                endDate
+              }
+            });
+            const data = validateAndReturn(tx);
+            console.log(data);
+            setTransactions(data);
+            setTransactionsCount(data.length)
+          }
+        }
+
+
         const response = await globalApi("/getInviteOu", HttpMethod.POST, {
           status: 'INVITED'
         });
@@ -160,22 +189,13 @@ const Dashboard = () => {
         setPendingInvitesCount(_invites.length)
 
 
-        const tx: HttpResposne = await globalApi("/chaincode", HttpMethod.POST, {
-          action: Action.TRANSACTIONS,
-          args: {
-            channelId,
-            startDate,
-            endDate
-          }
-        });
 
-        const data = validateAndReturn(tx);
-        setTransactions(data);
-        setTransactionsCount(data.length)
+      } else {
       }
 
+
     })()
-  }, [channelId, startDate, endDate]);
+  }, [channelId, endDate, startDate]);
 
   return (
     <>
@@ -189,6 +209,11 @@ const Dashboard = () => {
               className="underline"
             >account</a> to verify</small>
           </div>
+          : null
+      }
+      {
+        alertContent && Object.keys(alertContent).length
+          ? <AlertIndex type={alertContent.type as string} title={alertContent.title as string} content={alertContent.content as string} handleClose={() => setAlertContent({})} />
           : null
       }
       <div className="grid grid-cols-5 h-full">

@@ -13,10 +13,10 @@ export const api = async (path: string, type: HttpMethod, body: any = {}): Promi
   try {
 
     if (type === HttpMethod.GET) {
-      const { data } = await api.get(path, { timeout: 5000, headers: authHeader.headers });
+      const { data } = await api.get(path, { headers: authHeader.headers });
       return { message: "Done", details: data };
     } else if (type === HttpMethod.POST) {
-      const { data } = await api.post(path, body, { timeout: 5000, headers: authHeader.headers });
+      const { data } = await api.post(path, body, { headers: authHeader.headers });
       return { message: "Done", details: data };
     } else { return { message: "Error", details: 'No Http method supplied' } }
 

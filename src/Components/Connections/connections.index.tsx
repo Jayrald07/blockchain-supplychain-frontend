@@ -51,7 +51,6 @@ const Connection = () => {
         if (socket) {
             socket
                 .on("channelInvite", (data) => {
-                    console.log(data);
                 })
                 .on("p2p", data => {
                     setTempLogs((prevState) => {

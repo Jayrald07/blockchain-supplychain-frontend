@@ -4,7 +4,10 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHouse } from "@fortawesome/free-solid-svg-icons";
 
 export default ({ assetDetail }: { assetDetail: any }) => {
-
+  if (typeof assetDetail !== "object") return <div className="p-10 text-center">
+    <h1>Cannot find it.</h1>
+    <small className="font-light">The item might be already transferred to another organization</small>
+  </div>
   return (
     <section className="p-10">
       <div className="mb-10">

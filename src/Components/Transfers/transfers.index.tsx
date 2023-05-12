@@ -5,7 +5,7 @@ import Headerbar from "../HeaderBar/headerbar.index"
 import Navbar from "../Navbar/navbar.index"
 import { Action, host, port, validateAndReturn } from "../../utilities"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { faPlus, faSpinner } from "@fortawesome/free-solid-svg-icons"
+import { faFilePdf, faPlus, faSpinner } from "@fortawesome/free-solid-svg-icons"
 import { Modal } from "../Modalv2/modal.index"
 import { HttpMethod, api as globalApi } from "../../services/http";
 import { useNavigate } from "react-router-dom"
@@ -23,7 +23,6 @@ const TransferForm = ({ channelId, toggleModal }: { channelId: string, toggleMod
     const tbodyRowRef = useRef(null);
     const allCheckboxRef = useRef(null);
     const [specificAsset, setSpecificAsset] = useState<any>(null);
-    console.log({ channelId })
     const handleAllCheckbox = (e: any) => {
         if (e.target.checked) {
             assets.map((asset: any) => {
@@ -110,7 +109,6 @@ const TransferForm = ({ channelId, toggleModal }: { channelId: string, toggleMod
             })
 
             setAssets(validateAndReturn(data));
-            console.log(data)
 
             data = await globalApi("/chaincode", HttpMethod.POST, {
                 action: Action.TRANSACTIONS,
@@ -378,9 +376,7 @@ const TransactionDetails = ({ transaction, channelId, toggleModal }: { transacti
                 reason: 'nothing'
             }
         })
-        console.log(data)
         let response = validateAndReturn(data);
-        console.log(response);
 
         if (response.message === "Done") {
             let _re = JSON.parse(response.details);
@@ -421,10 +417,7 @@ const TransactionDetails = ({ transaction, channelId, toggleModal }: { transacti
 
                     let cleaned = validateAndReturn(data)
 
-                    console.log({ cleaned })
-
                     if (typeof cleaned === "object") {
-                        console.log({ transact })
                         transact.assetIds[index].assetName = cleaned[0].asset_name
                         transact.assetIds[index].tags = typeof transact.assetIds[index].tags === "string" ? JSON.parse(transact.assetIds[index].tags) : transact.assetIds[index].tags
                         setTransaction(transact);
@@ -432,7 +425,6 @@ const TransactionDetails = ({ transaction, channelId, toggleModal }: { transacti
 
 
                 })
-                console.log(transaction)
             }
             const response = await globalApi("/account", HttpMethod.GET);
             if (response.message === "Done") {
@@ -474,7 +466,6 @@ const TransactionDetails = ({ transaction, channelId, toggleModal }: { transacti
                         _transaction
                             ?
                             _transaction.assetIds.map((asset: any) => {
-                                console.log(asset)
                                 return <tr key={asset.assetId} className="hover:bg-slate-50 border-b-slate-100 text-left">
                                     <td className="p-2">{asset.assetName}</td>
                                     <td className="text-xs">
@@ -590,6 +581,7 @@ const Transfer = () => {
     const [isReceiver, setIsReceiver] = useState('PENDING');
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
+    const [isDownloading, setIsDownloading] = useState(false);
 
     const getDateToday = () => {
         var currentDate = new Date();
@@ -613,7 +605,6 @@ const Transfer = () => {
                     endDate: getDateToday()
                 }
             })
-            console.log(validateAndReturn(data))
 
             let _transact = validateAndReturn(data);
 
@@ -668,10 +659,48 @@ const Transfer = () => {
                 content: _re.details,
                 type: 'error'
             })
+            await handleTransactions()
         }
     }
 
+    const handlePdf = async () => {
+        setIsDownloading(true);
+        if (!isDownloading) {
+            const data = await globalApi("/chaincode", HttpMethod.POST, {
+                action: Action.PDF_TRANSACTIONS,
+                args: {
+                    channelId: channel,
+                    startDate,
+                    endDate
+                }
+            })
+            let response = validateAndReturn(data);
 
+            if (response.message === "Done") {
+                const url = `data:application/pdf;base64,${response.details}`
+                const link = document.createElement('a');
+                link.setAttribute('download', "Transactions");
+                link.setAttribute('href', url);
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                setAlertContent({
+                    title: "Transactions exported",
+                    content: "Current transactions has been downloaded",
+                    type: "success"
+                })
+            } else {
+                setAlertContent({
+                    title: "PDF Error",
+                    content: response.details,
+                    type: "error"
+                })
+            }
+
+        }
+
+        setIsDownloading(false);
+    }
 
     const handlePromptResponse = (response: string) => {
         if (response === 'Yes') {
@@ -681,7 +710,6 @@ const Transfer = () => {
     }
 
     useEffect(() => {
-        console.log(startDate, endDate)
         if (startDate && endDate) {
             if (startDate > endDate) {
                 setAlertContent({
@@ -700,7 +728,6 @@ const Transfer = () => {
                                 endDate
                             }
                         })
-                        console.log(validateAndReturn(data))
 
                         let _transact = validateAndReturn(data);
 
@@ -721,8 +748,6 @@ const Transfer = () => {
         handleTransactions()
         if (socket) {
             socket.on("notif", data => {
-                console.log({ channel })
-                console.log(data)
                 handleTransactions("notif")
                 if (data.action === 'refetch') {
                 }
@@ -758,7 +783,7 @@ const Transfer = () => {
                         : null
                 }
                 <Headerbar />
-                <div className="px-10 lg:px-24 md:px-20 sm:px-10 xl:px-24 py-20">
+                <div className="px-10 lg:px-16 md:px-14 sm:px-10 xl:px-24 py-20">
 
                     {
                         channels.length && channels[0].trim()
@@ -770,7 +795,7 @@ const Transfer = () => {
                                         <label className="text-sm mb-2 block">Channels</label>
                                         <ChannelIndex handleValue={setChannel} />
                                     </div>
-                                    <div className="mb-5 md:mb-0 col-span-4 md:col-start-3 md:col-span-3 md:flex justify-end items-end gap-x-3">
+                                    <div className="mb-5 md:mb-0 col-span-4 md:col-start-2 md:col-span-3 md:flex justify-end items-end gap-x-3">
                                         <div className="mb-3 md:mb-0">
                                             <label className="block text-sm">Start date</label>
                                             <input value={startDate} onChange={(e) => setStartDate(e.target.value)} type="date" className="p-1 px-2 outline-none border mr-2 text-sm font-light bg-white w-full" />
@@ -779,8 +804,16 @@ const Transfer = () => {
                                             <label className="block text-sm">End date</label>
                                             <input value={endDate} onChange={(e) => setEndDate(e.target.value)} type="date" className="p-1 px-2 outline-none border mr-2 text-sm font-light bg-white w-full" />
                                         </div>
-                                        <button className="border py-2 px-4 rounded" onClick={() => toggleCreateNewModal()}>
-                                            <FontAwesomeIcon icon={faPlus} size="sm" />
+                                        <button className="mr-2 md:mr-0 border py-2 px-4 rounded text-xs" onClick={handlePdf}>
+                                            {
+                                                isDownloading
+                                                    ? <FontAwesomeIcon icon={faSpinner} size="sm" className="animate-spin" />
+                                                    : <div className="flex items-center gap-x-4"><span>Generate PDF</span><FontAwesomeIcon icon={faFilePdf} size="sm" /></div>
+                                            }
+
+                                        </button>
+                                        <button className="border p-1 px-2 rounded" onClick={() => toggleCreateNewModal()}>
+                                            <FontAwesomeIcon icon={faPlus} size="xs" />
                                         </button>
                                     </div>
                                 </div>

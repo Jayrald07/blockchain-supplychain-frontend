@@ -28,6 +28,7 @@ export default () => {
         },
         async (text: any, result: any) => {
           let values = text.split(":")
+          await html5qr.current.stop();
           if (values.length === 3) {
             if (!scanning) {
               setScanning(true);
@@ -36,12 +37,11 @@ export default () => {
                 channelId: values[1],
                 assetId: values[2]
               });
+              console.log(history)
               if (history.message === "Done") {
                 let _history = validateAndReturn(history);
                 setAssetDetatil(_history);
-                await html5qr.current.stop();
                 setIsScanned(true);
-
               }
               setScanning(false)
             }

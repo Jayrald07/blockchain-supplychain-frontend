@@ -3,7 +3,9 @@ import React, { useEffect, useState } from "react";
 import InputIndex from "../Input/input.index";
 import "./asset.index.css";
 import {
+  faArrowRight,
   faChevronDown,
+  faCopy,
   faPlus,
   faQrcode,
   faSearch,
@@ -28,6 +30,7 @@ import useChannel from "../../hooks/useChannel";
 import useVerified from "../../hooks/useVerified";
 import { HttpMethod, api as globalApi } from "../../services/http";
 import PromptIndex from "../Prompt/prompt.index";
+import RmodalIndex from "../RModal/rmodal.index";
 
 
 const NewAsset = ({
@@ -53,13 +56,6 @@ const NewAsset = ({
     e.preventDefault();
     setIsSubmission(true)
     if (action === "update") {
-      console.log({
-        asset_name: assetName,
-        tags: selectedTags,
-        asset_description: description,
-        channelId,
-        assetId
-      })
       const { data } = await api.post("/chaincode", {
         action: Action.UPDATE_ASSET,
         args: {
@@ -208,9 +204,7 @@ const NewAsset = ({
               Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
           })
-        console.log({ dataTag })
         let _tags = validateAndReturn(dataTag).tags
-        console.log(_tags)
         setSelectedTags(typeof _tags === "object" ? _tags : JSON.parse(_tags));
       } else {
         setAssetName("");
@@ -295,6 +289,47 @@ const NewAsset = ({
   );
 };
 
+const MoveTo = ({ channelId, moveInit, label }: { channelId: string, moveInit: (channelId: string) => void, label: string }) => {
+  const channels = useChannel();
+  const [channel, setChannel] = useState("")
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (channels.length) {
+      let ch = channels.filter((channel) => channel !== channelId)
+      setChannel(ch[0]);
+    }
+  }, [channels]);
+
+  if (!channels.length) return <h1 className="text-center font-light text-xs py-5">No other channels available</h1>
+
+  return <div>
+    <label className="text-sm mb-1 block">{label}:</label>
+    <small className="font-light mb-3 block text-xs"><b>Note: </b>If the same asset is already on the other channel, it will override its information.</small>
+    <select onChange={(e) => setChannel(e.target.value)} className="w-full outline-none p-2 font-light text-sm bg-white border">
+      {
+        channels.map(channel => {
+          if (channel !== channelId) return <option value={channel}>{channel}</option>
+        })
+      }
+    </select>
+    <div className="py-3 flex justify-end">
+      <button onClick={() => {
+        setIsSubmitting(true);
+        moveInit(channel)
+      }} className="border rounded p-1 px-2 bg-white text-sm">
+        {
+          isSubmitting
+            ? <FontAwesomeIcon icon={faSpinner} size="xs" className="animate-spin" />
+            : 'Submit'
+        }
+      </button>
+    </div>
+  </div>
+
+
+}
+
 const Asset = () => {
   const [searchText, setSearchText] = useState("");
   const [assets, setAssets] = useState([]);
@@ -312,6 +347,10 @@ const Asset = () => {
   const [alertContent, setAlertContent] = useState<{ title?: string, description?: string, type?: string }>({})
   const [selectedAssetIds, setSelectedAssetIds] = useState<string[]>([]);
   const [generating, setGenerating] = useState(false);
+  const [isMove, setIsMove] = useState(false);
+  const [isCopy, setIsCopy] = useState(false);
+  const [toMoveAssetIds, setToMoveAssetIds] = useState<string[]>([]);
+  const [toCopyAssetIds, setToCopyAssetIds] = useState<string[]>([]);
 
   const api = axios.create({ baseURL: `${host}:${port}` });
 
@@ -339,13 +378,6 @@ const Asset = () => {
   const handlePromptResponse = async (response: string) => {
     if (response === 'Yes') {
       const response = await globalApi("/chaincode", HttpMethod.POST, {
-        action: Action.REMOVE_ASSET,
-        args: {
-          channelId: channel,
-          assetIds: [promptContent.assetId]
-        }
-      })
-      console.log({
         action: Action.REMOVE_ASSET,
         args: {
           channelId: channel,
@@ -419,14 +451,26 @@ const Asset = () => {
         }
       })
       let val = validateAndReturn(response);
-
-      const url = `data:application/pdf;base64,${val.details}`
-      const link = document.createElement('a');
-      link.setAttribute('download', "Asset QR Codes");
-      link.setAttribute('href', url);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      if (val.message === "Done") {
+        const url = `data:application/pdf;base64,${val.details}`
+        const link = document.createElement('a');
+        link.setAttribute('download', "Asset QR Codes");
+        link.setAttribute('href', url);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        setAlertContent({
+          title: 'Exported QR Codes',
+          description: "Assets QR Codes have been exported",
+          type: "success"
+        })
+      } else {
+        setAlertContent({
+          title: 'PDF Error',
+          description: val.details,
+          type: "error"
+        })
+      }
 
       setGenerating(false);
     }
@@ -442,6 +486,126 @@ const Asset = () => {
       }
 
     })
+  }
+
+  const handleMoveInit = async (channelTo: string) => {
+    const response = await globalApi("/chaincode", HttpMethod.POST, {
+      action: Action.MOVE,
+      args: {
+        channelId: channel,
+        channelTo,
+        assetIds: toMoveAssetIds
+      }
+    })
+    let cleaned = validateAndReturn(response)
+    console.log(cleaned)
+    if (cleaned.message === "Done") {
+      let resp = JSON.parse(cleaned.details);
+      if (resp.message === "Done") {
+        setAlertContent({
+          title: "Moved successfully",
+          description: resp.details,
+          type: 'success'
+        })
+      } else {
+        setAlertContent({
+          title: "Error moving",
+          description: resp.details,
+          type: 'error'
+        })
+      }
+    } else setAlertContent({
+      title: "Error moving",
+      description: response.details,
+      type: 'error'
+    })
+
+    setIsMove(false);
+    handleAssets()
+    setToMoveAssetIds([]);
+
+
+  }
+
+  const handleCopyInit = async (channelTo: string) => {
+    const response = await globalApi("/chaincode", HttpMethod.POST, {
+      action: Action.COPY,
+      args: {
+        channelId: channel,
+        channelTo,
+        assetIds: toCopyAssetIds
+      }
+    })
+    let cleaned = validateAndReturn(response)
+    console.log(cleaned)
+    if (cleaned.message === "Done") {
+      let resp = JSON.parse(cleaned.details);
+      if (resp.message === "Done") {
+        setAlertContent({
+          title: "Copied successfully",
+          description: resp.details,
+          type: 'success'
+        })
+      } else {
+        setAlertContent({
+          title: "Error copying",
+          description: resp.details,
+          type: 'error'
+        })
+      }
+    } else setAlertContent({
+      title: "Error copying",
+      description: response.details,
+      type: 'error'
+    })
+
+    setIsCopy(false);
+    handleAssets()
+    setToCopyAssetIds([]);
+
+
+  }
+
+  const handleMove = (assetId: string, indiv: boolean, checked: boolean) => {
+    if (indiv) setIsMove(true)
+    let update = [...toMoveAssetIds, assetId];
+    update = Array.from(new Set(update));
+
+    if (!checked) update = update.filter(id => id != assetId)
+
+    setToMoveAssetIds(update);
+    console.log(update);
+  }
+
+  const handleCopy = (assetId: string, indiv: boolean, checked: boolean) => {
+    if (indiv) setIsCopy(true)
+    let update = [...toCopyAssetIds, assetId];
+    update = Array.from(new Set(update));
+
+    if (!checked) update = update.filter(id => id != assetId)
+
+    setToCopyAssetIds(update);
+    console.log(update);
+  }
+
+  const handleMultiMove = () => {
+    if (!toMoveAssetIds.length) {
+      setAlertContent({
+        title: 'Not Allowed',
+        description: 'No selected assets',
+        type: 'error'
+      })
+    } else setIsMove(true)
+  }
+
+  const handleMultiCopy = () => {
+    if (!toCopyAssetIds.length) {
+      setAlertContent({
+        title: 'Not Allowed',
+        description: 'No selected assets',
+        type: 'error'
+      })
+    } else setIsCopy(true)
   }
 
   useEffect(() => {
@@ -484,6 +648,16 @@ const Asset = () => {
               className="underline"
             >account</a> to verify</small>
           </div>
+          : null
+      }
+      {
+        isMove
+          ? <RmodalIndex title="Move Asset" Component={<MoveTo label="Move to" moveInit={handleMoveInit} channelId={channel} />} onClose={() => setIsMove(false)} />
+          : null
+      }
+      {
+        isCopy
+          ? <RmodalIndex title="Copy Asset" Component={<MoveTo label="Copy to" moveInit={handleCopyInit} channelId={channel} />} onClose={() => setIsCopy(false)} />
           : null
       }
       <main className="grid grid-cols-5 h-full">
@@ -530,6 +704,18 @@ const Asset = () => {
                     >
                       <span>Create New Asset</span> <FontAwesomeIcon icon={faPlus} />
                     </button>
+                    <button
+                      className="border rounded py-2 px-3.5 hover:bg-gray-100 text-xs mb-4"
+                      onClick={handleMultiMove}
+                    >
+                      <span className="pr-2">Move</span> <FontAwesomeIcon icon={faArrowRight} />
+                    </button>
+                    <button
+                      className="border rounded py-2 px-3.5 hover:bg-gray-100 text-xs mb-4"
+                      onClick={handleMultiCopy}
+                    >
+                      <span className="pr-2">Copy</span> <FontAwesomeIcon icon={faCopy} />
+                    </button>
                   </section>
                   <Table
                     rows={assets}
@@ -537,6 +723,8 @@ const Asset = () => {
                     handleView={handleView}
                     handleRemove={handleRemove}
                     handleCheck={handleCheck}
+                    handleMove={handleMove}
+                    handleCopy={handleCopy}
                   />
                 </>
                 :

@@ -19,7 +19,10 @@ export enum Action {
     PDF = 'PDF',
     RETURN = 'RETURN',
     PULL = 'PULL',
-    REJECT = 'REJECT'
+    REJECT = 'REJECT',
+    PDF_TRANSACTIONS = 'PDF_TRANSACTIONS',
+    MOVE = 'MOVE',
+    COPY = 'COPY'
 }
 
 export interface HttpResposne {
@@ -29,7 +32,7 @@ export interface HttpResposne {
 }
 
 export const validateAndReturn = (httpResponse: HttpResposne | any): any => {
-    if (Object.keys(httpResponse).includes("details")) {
+    if (httpResponse !== null && Object.keys(httpResponse).includes("details")) {
         if (typeof httpResponse.details !== "string") {
             return validateAndReturn(httpResponse.details)
         } else {

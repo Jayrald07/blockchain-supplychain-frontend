@@ -79,9 +79,9 @@ const Transaction = () => {
                         }
                         const response: HttpResposne = await api("/chaincode", HttpMethod.POST, body);
                         const data = validateAndReturn(response);
-                        console.log(data.logs)
-
-                        setActivities(data.logs);
+                        console.log(data);
+                        if (Array.isArray(data)) setActivities([]);
+                        else setActivities(data.logs ? data.logs : []);
                     }
                 }
 

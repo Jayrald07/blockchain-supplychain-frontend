@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBell, faSignOut, faUser } from "@fortawesome/free-solid-svg-icons";
+import { faArrowLeft, faBell, faChevronLeft, faSignOut, faUser } from "@fortawesome/free-solid-svg-icons";
 import "./headerbar.index.css";
 import Statusbar from "../StatusBar/statusbar.index";
 import { useNavigate } from "react-router-dom";
-import { Action, host, port } from "../../utilities";
+import { Action, host, port, validateAndReturn } from "../../utilities";
 import axios from "axios";
 import { Socket } from "socket.io-client";
 import useSocket from "../../hooks/useSocket";
+
+import { HttpMethod, api as globalApi } from "../../services/http";
 
 const api = axios.create({ baseURL: `${host}:${port}` });
 
@@ -16,6 +18,7 @@ export default () => {
   const navigate = useNavigate();
   const [notifs, setNotifs] = useState([]);
   const socket: Socket | null = useSocket(`${host}:${port}`);
+  const [isOnlyAccessing, setIsOnlyAccessing] = useState("");
 
   const handleNotifs = async () => {
     const { data } = await api.post("/getNotifs", {
@@ -43,9 +46,33 @@ export default () => {
 
   }
 
+  const handleValidateSwitch = async () => {
+    const response = await globalApi("/validateSwitched", HttpMethod.POST);
+
+    if (response.message === "Done") {
+      if (response.details.message === "Done") {
+        if (response.details.details) setIsOnlyAccessing(response.details.details)
+      }
+    }
+
+  }
+
+  const handleSwitchBack = async () => {
+    const response = await globalApi("/switchBack", HttpMethod.POST);
+
+    const cleaned = validateAndReturn(response);
+
+    if (cleaned.message === "Done") {
+      localStorage.setItem("token", cleaned.token);
+      location.reload();
+    }
+
+  }
+
   useEffect(() => {
     (async () => {
       await handleNotifs();
+      await handleValidateSwitch();
     })();
   }, []);
 
@@ -64,6 +91,14 @@ export default () => {
     <header className="border-b grid grid-cols-2">
       <Statusbar />
       <ul className="flex justify-end text-slate-700">
+        {
+          isOnlyAccessing.trim()
+            ? <li>
+              <a title="Switch Back" href="#" onClick={() => handleSwitchBack()} className="p-5 px-6 block hover:bg-gray-100">
+                <FontAwesomeIcon icon={faArrowLeft} />
+              </a>
+            </li> : null
+        }
         <li className="notification-tab" onMouseLeave={handleViewNotifs}>
           <a href="#" className="p-5 px-6 block hover:bg-gray-100 relative z-10">
             <FontAwesomeIcon icon={faBell} />
@@ -97,6 +132,7 @@ export default () => {
             </div>
           </a>
         </li>
+
         <li>
           <a href="#" onClick={() => navigate("/account")} className="p-5 px-6 block hover:bg-gray-100">
             <FontAwesomeIcon icon={faUser} />

@@ -165,12 +165,12 @@ const Account = () => {
         content: 'Cannot accept OU'
       })
     }
+    handleClosePrompt();
     await handlePendings(false);
 
     await handlePendings(true);
 
     await handleGetInviteOut()
-    handleClosePrompt();
   }
 
   const handleRemove = async (response: string) => {
@@ -300,8 +300,17 @@ const Account = () => {
           Authorization: `Basic ${localStorage.getItem("token")}`,
         }
       })
-
-      console.log({ data });
+      setPromptContent({})
+      if (data.message === "Switched") {
+        localStorage.setItem("token", data.token);
+        location.reload();
+      } else {
+        setAlertContent({
+          title: "Error switching",
+          content: data.details,
+          type: "error"
+        })
+      }
     }
 
   }
