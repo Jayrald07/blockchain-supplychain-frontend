@@ -18,33 +18,38 @@ export default () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [alertContent, setAlertContent] = useState<{ title?: string, content?: string, type?: string }>({});
+  const [isVerifying, setIsVerifying] = useState(false);
 
 
   const token = query.get('token');
 
   const handleValidate = async (e: any) => {
-    e.preventDefault()
+    if (!isVerifying) {
+      setIsVerifying(true)
+      e.preventDefault()
 
 
-    const { data } = await api.post("/validateEmailVerification", {
-      token: token,
-      username,
-      password
-    });
+      const { data } = await api.post("/validateEmailVerification", {
+        token: token,
+        username,
+        password
+      });
 
-    if (data.message === "Error") setAlertContent({
-      title: 'Verification Error',
-      content: data.details,
-      type: 'error'
-    })
-    else {
-      setIsValid("verified");
-      setAlertContent({
-        title: 'Verification Success',
+      if (data.message === "Error") setAlertContent({
+        title: 'Verification Error',
         content: data.details,
-        type: 'success'
+        type: 'error'
       })
+      else {
+        setIsValid("verified");
+        setAlertContent({
+          title: 'Verification Success',
+          content: data.details,
+          type: 'success'
+        })
 
+      }
+      setIsVerifying(false)
     }
 
   }
@@ -93,7 +98,13 @@ export default () => {
             <form onSubmit={handleValidate} className="grid bg-white border rounded p-4 shadow-md">
               <InputIndex icon={<FontAwesomeIcon icon={faUser} />} type="text" label="Username" value={username} handler={(e: any) => setUsername(e.target.value)} />
               <InputIndex icon={<FontAwesomeIcon icon={faKey} />} type="password" label="Password" value={password} handler={(e: any) => setPassword(e.target.value)} />
-              <button className="border rounded p-2 px-3 bg-white text-xs justify-self-end">Verify</button>
+              <button className="border rounded p-2 px-3 bg-white text-xs justify-self-end">
+                {
+                  isVerifying
+                    ? <FontAwesomeIcon icon={faSpinner} size="xs" className="animate-spin" />
+                    : 'Verify'
+                }
+              </button>
             </form>
           </div>
         </div>

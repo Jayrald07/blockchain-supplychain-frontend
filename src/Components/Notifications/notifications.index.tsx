@@ -83,7 +83,7 @@ export default () => {
     }
     <div className="grid grid-cols-5 h-full">
       <NavbarIndex />
-      <div className="col-span-5 sm:col-span-5 md:col-span-5">
+      <div className="col-span-4 sm:col-span-4 md:col-span-4">
         <HeaderbarIndex />
         <div className="px-10 pt-20 lg:px-44 md:px-20 sm:px-10 xl:px-24 mb-5">
           <h1 className="text-2xl mb-5">Notifications</h1>

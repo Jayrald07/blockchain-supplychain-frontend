@@ -14,7 +14,13 @@ import AlertIndex from "../Alert/alert.index"
 import useVerified from "../../hooks/useVerified"
 import useSocket from "../../hooks/useSocket"
 import PromptIndex from "../Prompt/prompt.index"
+import { DatePicker, Select, Space } from "antd"
+import moment from "moment"
+import dayjs from "dayjs"
 
+const { Option } = Select
+
+const { RangePicker } = DatePicker
 
 const TransferForm = ({ channelId, toggleModal }: { channelId: string, toggleModal: (alert: { title?: string, content?: string, type?: string }) => void }) => {
 
@@ -23,6 +29,8 @@ const TransferForm = ({ channelId, toggleModal }: { channelId: string, toggleMod
     const tbodyRowRef = useRef(null);
     const allCheckboxRef = useRef(null);
     const [specificAsset, setSpecificAsset] = useState<any>(null);
+    const [isSubmittin, setIsSubmitting] = useState(false);
+
     const handleAllCheckbox = (e: any) => {
         if (e.target.checked) {
             assets.map((asset: any) => {
@@ -63,20 +71,25 @@ const TransferForm = ({ channelId, toggleModal }: { channelId: string, toggleMod
     }
 
     const handleTransfer = async () => {
-        if (queueAssets.length) {
-            let data = await globalApi("/chaincode", HttpMethod.POST, {
-                action: Action.TRANSFER,
-                args: {
-                    assetIds: queueAssets,
-                    channelId
-                }
-            })
+        if (!isSubmittin) {
 
-            const response = validateAndReturn(data);
+            if (queueAssets.length) {
+                setIsSubmitting(true)
+                let data = await globalApi("/chaincode", HttpMethod.POST, {
+                    action: Action.TRANSFER,
+                    args: {
+                        assetIds: queueAssets,
+                        channelId
+                    }
+                })
 
-            if (response.message === "Done") toggleModal({ type: 'success', title: 'Success transfer initiate', content: response.details })
-            else toggleModal({ type: 'error', title: 'Error transfer initiate', content: response.details })
+                const response = validateAndReturn(data);
 
+                if (response.message === "Done") toggleModal({ type: 'success', title: 'Success transfer initiate', content: response.details })
+                else toggleModal({ type: 'error', title: 'Error transfer initiate', content: response.details })
+                setIsSubmitting(false)
+
+            }
         }
     }
 
@@ -177,8 +190,13 @@ const TransferForm = ({ channelId, toggleModal }: { channelId: string, toggleMod
             </tbody>
         </table>
         <div className="flex justify-end">
-            <button disabled={queueAssets.length === 0} onClick={handleTransfer} className={`text-sm border rounded p-2 disabled:bg-slate-100 ${queueAssets.length === 0 ? 'text-slate-400' : ''}`}>Submit</button>
-
+            <button disabled={queueAssets.length === 0} onClick={handleTransfer} className={`text-sm border rounded p-2 disabled:bg-slate-100 ${queueAssets.length === 0 ? 'text-slate-400' : ''}`}>
+                {
+                    isSubmittin
+                        ? <FontAwesomeIcon icon={faSpinner} size="xs" className="animate-spin" />
+                        : 'Submit'
+                }
+            </button>
         </div>
     </div>
 }
@@ -196,7 +214,11 @@ const TransactionDetails = ({ transaction, channelId, toggleModal }: { transacti
     const [alertContent, setAlertContent] = useState<{ title?: string, description?: string, type?: string }>({})
     const [isReceiver, setIsReceiver] = useState('PENDING');
     const [promptContent, setPromptContent] = useState<{ question?: string, description?: string, buttons?: string[], transactionId?: string, type?: string }>({})
-
+    const [isReasoning, setIsReasoning] = useState(false);
+    const [reason, setReason] = useState("");
+    const [reasonType, setReasonType] = useState("");
+    const [isLoadingReasoning, setIsLoadingReasoning] = useState(false);
+    const [type, setType] = useState("");
 
     const handleAcceptAsset = async (transactionId: string) => {
         setIsLoadingAccept(true)
@@ -311,7 +333,7 @@ const TransactionDetails = ({ transaction, channelId, toggleModal }: { transacti
         })
 
         const cleaned = validateAndReturn(data);
-
+        console.log(cleaned)
         let response = JSON.parse(cleaned.details);
 
         if (response.message === "Error") {
@@ -333,75 +355,94 @@ const TransactionDetails = ({ transaction, channelId, toggleModal }: { transacti
     }
 
     const handleReject = async (transactionId: string) => {
-        setIsLoadingReject(true);
-        const data = await globalApi("/chaincode", HttpMethod.POST, {
-            action: Action.REJECT,
-            args: {
-                channelId,
-                transactionId
+        if (!isLoadingReasoning) {
+            setIsLoadingReasoning(true)
+            const data = await globalApi("/chaincode", HttpMethod.POST, {
+                action: Action.REJECT,
+                args: {
+                    channelId,
+                    transactionId,
+                    reason
+                }
+            })
+
+            const cleaned = validateAndReturn(data);
+
+            let response = JSON.parse(cleaned.details);
+
+            if (response.message === "Error") {
+                setAlertContent({
+                    title: 'Error rejecting the transaction',
+                    description: response.details,
+                    type: "error"
+                })
+            } else {
+                setAlertContent({
+                    title: 'Success rejecting transaction',
+                    description: response.details,
+                    type: "success"
+                })
+                setReason("");
             }
-        })
+            setIsLoadingReasoning(false)
 
-        const cleaned = validateAndReturn(data);
-
-        let response = JSON.parse(cleaned.details);
-
-        if (response.message === "Error") {
-            setAlertContent({
-                title: 'Error rejecting the transaction',
-                description: response.details,
-                type: "error"
-            })
-        } else {
-            setAlertContent({
-                title: 'Success rejecting transaction',
-                description: response.details,
-                type: "success"
-            })
+            toggleModal();
         }
 
-        setIsLoadingReject(false)
-
-        setTimeout(() => {
-            toggleModal();
-        }, 15000)
     }
 
-    const handleReturn = async () => {
-        const data = await globalApi("/chaincode", HttpMethod.POST, {
-            action: Action.RETURN,
-            args: {
-                channelId,
-                transactionId: promptContent.transactionId,
-                reason: 'nothing'
-            }
-        })
-        let response = validateAndReturn(data);
 
-        if (response.message === "Done") {
-            let _re = JSON.parse(response.details);
-            if (_re.message === "Done") setAlertContent({
-                title: 'Transaction Rejected',
-                description: _re.details,
-                type: 'success'
+    const handleReturn = async (transactionId: string) => {
+        if (!isLoadingReasoning) {
+            setIsLoadingReasoning(true)
+            const data = await globalApi("/chaincode", HttpMethod.POST, {
+                action: Action.RETURN,
+                args: {
+                    channelId,
+                    transactionId: transactionId,
+                    reason
+                }
             })
-            else setAlertContent({
-                title: 'Error Rejecting Transaction',
-                description: _re.details,
-                type: 'error'
-            })
+            let response = validateAndReturn(data);
+
+            if (response.message === "Done") {
+                let _re = JSON.parse(response.details);
+                if (_re.message === "Done") setAlertContent({
+                    title: 'Transaction Returned',
+                    description: _re.details,
+                    type: 'success'
+                })
+                else setAlertContent({
+                    title: 'Error Returning Transaction',
+                    description: _re.details,
+                    type: 'error'
+                })
+            }
+            setIsLoadingReasoning(false)
+            toggleModal();
         }
+
     }
 
     const handlePromptResponse = (response: string) => {
-        setIsLoadingReturn(true)
-        if (response === 'Yes') {
-            handleReturn();
-        }
 
-        setIsLoadingReturn(false)
-        setPromptContent({})
+        // if (promptContent.type === 'RETURN') {
+        //     setIsLoadingReturn(true)
+        //     if (response === 'Yes') {
+        //         handleReturn();
+        //     }
 
+        //     setIsLoadingReturn(false)
+        // } else if (promptContent.type === 'REJECT') {
+
+        // }
+        // setPromptContent({})
+
+    }
+
+    const handleReasoning = (transactionId: string) => {
+        if (reasonType === "REJECT") handleReject(transactionId);
+        else if (reasonType === "RETURN") handleReturn(transactionId)
     }
 
     useEffect(() => {
@@ -433,6 +474,8 @@ const TransactionDetails = ({ transaction, channelId, toggleModal }: { transacti
                 if (_id === _transact.newOwnerOrgId) setIsReceiver('TRUE');
                 else setIsReceiver('FALSE');
             }
+
+
         })();
 
 
@@ -472,9 +515,9 @@ const TransactionDetails = ({ transaction, channelId, toggleModal }: { transacti
                                         {
                                             typeof asset.tags === "string"
                                                 ? JSON.parse(asset.tags).map((tag: any, index: number) => {
-                                                    return <p key={`${tag.key}-${index}`}><b>{tag.key}: </b>{tag.value}</p>
+                                                    return <p className="py-1" key={`${tag.key}-${index}`}><b>{tag.key}: </b>{tag.value}</p>
                                                 }) : asset.tags.map((tag: any, index: number) => {
-                                                    return <p key={`${tag.key}-${index}`}><b>{tag.key}: </b>{tag.value}</p>
+                                                    return <p className="py-1" key={`${tag.key}-${index}`}><b>{tag.key}: </b>{tag.value}</p>
                                                 })
                                         }
                                     </td>
@@ -484,6 +527,14 @@ const TransactionDetails = ({ transaction, channelId, toggleModal }: { transacti
                     }
                 </tbody>
             </table>
+            {
+                _transaction && (_transaction.isRejected || _transaction.isReturned)
+                    ? <>
+                        <label className="text-sm mb-2 block">Reason for {_transaction.isRejected ? 'Rejection' : 'Returned'}: </label>
+                        <textarea disabled value={_transaction.reason} className="w-full border outline-none font-light text-xs p-2" rows={5}></textarea>
+                    </>
+                    : null
+            }
             {
                 isReceiver === 'FALSE' ? _transaction ? (_transaction.isRejected || _transaction.isReturned) ? !_transaction.isGotBack
                     ? <button className="bg-green-400 w-full rounded p-1 text-center text-sm" onClick={() => handleGetAssets(_transaction.id)}>
@@ -527,37 +578,74 @@ const TransactionDetails = ({ transaction, channelId, toggleModal }: { transacti
             {
                 _transaction ? (!_transaction.isRejected ? !_transaction.isCancelled ? isReceiver === 'TRUE' ? _transaction ? !_transaction.isNewOwnerAccepted
                     ? <>
-                        <button className="bg-green-400 w-full rounded p-1 text-center text-sm mb-2" onClick={() => handleAcceptAsset(_transaction.id)}>{
-                            isLoadingAccept
-                                ?
-                                <FontAwesomeIcon icon={faSpinner} className="animate-spin" size="sm" />
-                                : 'Accept'
-                        }</button>
-                        <button className="border w-full rounded p-1 text-center text-sm" onClick={() => handleReject(_transaction.id)}>
-                            {
-                                isLoadingReject
-                                    ?
-                                    <FontAwesomeIcon icon={faSpinner} className="animate-spin" size="sm" />
-                                    : 'Reject'
-                            }
-                        </button>
+                        {
+                            !isReasoning
+                                ? <>
+                                    <button className="bg-green-400 w-full rounded p-1 text-center text-sm mb-2" onClick={() => handleAcceptAsset(_transaction.id)}>{
+                                        isLoadingAccept
+                                            ?
+                                            <FontAwesomeIcon icon={faSpinner} className="animate-spin" size="sm" />
+                                            : 'Accept'
+                                    }</button>
+                                    <button className="border w-full rounded p-1 text-center text-sm" onClick={() => {
+                                        setIsReasoning(true)
+                                        setReasonType("REJECT")
+                                    }}>
+                                        {
+                                            isLoadingReject
+                                                ?
+                                                <FontAwesomeIcon icon={faSpinner} className="animate-spin" size="sm" />
+                                                : 'Reject'
+                                        }
+                                    </button>
+                                </>
+                                : null
+                        }
                     </>
                     : null : null : null : null : null) : null
             }
 
             {
+                isReasoning
+                    ? <>
+                        <label className="text-sm mb-2 block">Please input the reason:</label>
+                        <textarea value={reason} onChange={(e) => setReason(e.target.value)} className="w-full border outline-none font-light text-xs p-2" rows={5}></textarea>
+                        <div className="flex justify-end">
+                            <button onClick={() => {
+                                setReason("");
+                                setIsReasoning(false)
+                            }} className="border rounded p-2 px-3 text-center text-sm mr-3">
+                                Cancel
+                            </button>
+                            <button onClick={() => {
+                                handleReasoning(_transaction.id)
+                            }} className="border rounded p-2 px-3 text-center text-sm">
+                                {
+                                    isLoadingReasoning
+                                        ? <FontAwesomeIcon icon={faSpinner} size="xs" className="animate-spin" />
+                                        : 'Submit'
+                                }
+                            </button>
+                        </div>
+                    </> : null
+            }
+
+            {
                 isReceiver === 'TRUE' ? _transaction ? !_transaction.isReturned && !_transaction.isRejected && _transaction.isOwnershipChanged
-                    ? <button className="bg-green-400 w-full rounded p-1 text-center text-sm mb-2" onClick={() => setPromptContent({
-                        question: 'Are you sure to return?',
-                        description: 'This will return back the asset',
-                        buttons: ['Yes', 'No'],
-                        transactionId: _transaction.id
-                    })}>{
-                            isLoadingReturn
-                                ?
-                                <FontAwesomeIcon icon={faSpinner} className="animate-spin" size="sm" />
-                                : 'Return'
-                        }</button>
+                    ? <>
+                        {
+                            !isReasoning
+                                ? <button className="bg-green-400 w-full rounded p-1 text-center text-sm mb-2" onClick={() => {
+                                    setIsReasoning(true)
+                                    setReasonType("RETURN")
+                                }}>{
+                                        isLoadingReturn
+                                            ?
+                                            <FontAwesomeIcon icon={faSpinner} className="animate-spin" size="sm" />
+                                            : 'Return'
+                                    }</button> : null
+                        }
+                    </>
                     : null : null : null
             }
 
@@ -582,6 +670,12 @@ const Transfer = () => {
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
     const [isDownloading, setIsDownloading] = useState(false);
+    const [status, setStatus] = useState("")
+    const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
+    const [isFetchingTransactions, setIsFetchingTransactions] = useState(false);
+    const STATUSES = ['Done', 'Returned', 'Rejected', 'Cancelled', 'For Acceptance', 'For Approval', 'For Own'];
+    const filteredStatuses = STATUSES.filter((o) => !selectedStatuses.includes(o));
+
 
     const getDateToday = () => {
         var currentDate = new Date();
@@ -597,18 +691,23 @@ const Transfer = () => {
 
     const handleTransactions = async (from?: string) => {
         if (channel.trim()) {
+            setIsFetchingTransactions(true);
             const data = await globalApi("/chaincode", HttpMethod.POST, {
                 action: Action.TRANSACTIONS,
                 args: {
                     channelId: channel,
-                    startDate: getDateToday(),
-                    endDate: getDateToday()
+                    startDate: startDate ? startDate : getDateToday(),
+                    endDate: endDate ? endDate : getDateToday(),
+                    statuses: selectedStatuses
                 }
             })
 
             let _transact = validateAndReturn(data);
+            console.log(_transact)
 
             setTransactions(_transact);
+            setIsFetchingTransactions(false);
+
         }
     }
 
@@ -635,6 +734,10 @@ const Transfer = () => {
 
     const handleRedirectConnection = () => {
         navigate("/connections")
+    }
+
+    const handleStatus = () => {
+        handleTransactions();
     }
 
     const handleCancel = async () => {
@@ -664,6 +767,14 @@ const Transfer = () => {
     }
 
     const handlePdf = async () => {
+        if (!transactions.length) {
+            setAlertContent({
+                title: 'Erro Generate PDF',
+                content: 'There is no existing transactions',
+                type: 'error'
+            })
+            return;
+        }
         setIsDownloading(true);
         if (!isDownloading) {
             const data = await globalApi("/chaincode", HttpMethod.POST, {
@@ -671,7 +782,8 @@ const Transfer = () => {
                 args: {
                     channelId: channel,
                     startDate,
-                    endDate
+                    endDate,
+                    statuses: selectedStatuses
                 }
             })
             let response = validateAndReturn(data);
@@ -720,18 +832,23 @@ const Transfer = () => {
             } else {
                 if (channel.trim()) {
                     (async () => {
+                        setIsFetchingTransactions(true);
+
                         const data = await globalApi("/chaincode", HttpMethod.POST, {
                             action: Action.TRANSACTIONS,
                             args: {
                                 channelId: channel,
                                 startDate,
-                                endDate
+                                endDate,
+                                statuses: selectedStatuses
                             }
                         })
 
                         let _transact = validateAndReturn(data);
 
                         setTransactions(_transact);
+                        setIsFetchingTransactions(false);
+
                     })()
                 }
             }
@@ -754,6 +871,24 @@ const Transfer = () => {
             })
         }
     }, [socket, channel]);
+
+    const dateFooter = () => {
+        return <div className="flex gap-x-4 justify-end px-4">
+            <div>
+                <a onClick={() => {
+                    setStartDate(getDateToday())
+                    setEndDate(getDateToday())
+                }}>Today</a>
+            </div>
+            <div>
+                <a onClick={() => {
+                    let yesterday = moment().subtract({ day: 1 }).format("YYYY-MM-DD")
+                    setStartDate(yesterday)
+                    setEndDate(yesterday)
+                }}>Yesterday</a>
+            </div>
+        </div>
+    }
 
     return <>
         {
@@ -790,32 +925,62 @@ const Transfer = () => {
                             ? <>
                                 <h1 className="text-2xl mb-5">Transactions</h1>
 
-                                <div className="grid grid-cols-1 sm:grid-cols-4 items-center">
-                                    <div className="col-span-4 md:col-span-1">
+                                <div className="grid grid-cols-1 sm:grid-cols-4 items-end gap-4 mb-3">
+                                    <div className="col-span-2 sm:col-span-1">
                                         <label className="text-sm mb-2 block">Channels</label>
                                         <ChannelIndex handleValue={setChannel} />
                                     </div>
-                                    <div className="mb-5 md:mb-0 col-span-4 md:col-start-2 md:col-span-3 md:flex justify-end items-end gap-x-3">
-                                        <div className="mb-3 md:mb-0">
-                                            <label className="block text-sm">Start date</label>
-                                            <input value={startDate} onChange={(e) => setStartDate(e.target.value)} type="date" className="p-1 px-2 outline-none border mr-2 text-sm font-light bg-white w-full" />
-                                        </div>
-                                        <div className="mb-3 md:mb-0">
-                                            <label className="block text-sm">End date</label>
-                                            <input value={endDate} onChange={(e) => setEndDate(e.target.value)} type="date" className="p-1 px-2 outline-none border mr-2 text-sm font-light bg-white w-full" />
-                                        </div>
-                                        <button className="mr-2 md:mr-0 border py-2 px-4 rounded text-xs" onClick={handlePdf}>
-                                            {
-                                                isDownloading
-                                                    ? <FontAwesomeIcon icon={faSpinner} size="sm" className="animate-spin" />
-                                                    : <div className="flex items-center gap-x-4"><span>Generate PDF</span><FontAwesomeIcon icon={faFilePdf} size="sm" /></div>
-                                            }
-
-                                        </button>
-                                        <button className="border p-1 px-2 rounded" onClick={() => toggleCreateNewModal()}>
-                                            <FontAwesomeIcon icon={faPlus} size="xs" />
-                                        </button>
+                                    <div className="col-span-2">
+                                        <label className="block text-sm mb-2">Select Date</label>
+                                        <RangePicker
+                                            disabledDate={(current) => current && current > moment().endOf('day')}
+                                            value={[
+                                                dayjs(startDate),
+                                                dayjs(endDate)
+                                            ]}
+                                            className="w-full z-0 rounded-none"
+                                            onChange={(_, str) => {
+                                                if (str[0].trim()) {
+                                                    console.log(_, str)
+                                                    setStartDate(str[0]);
+                                                    setEndDate(str[1]);
+                                                }
+                                            }} renderExtraFooter={dateFooter} />
                                     </div>
+                                    <div>
+                                        <label className="block text-sm mb-2">Select Statuses</label>
+                                        <Select
+                                            allowClear
+                                            mode="multiple"
+                                            style={{ width: '100%' }}
+                                            placeholder="Select one or more statuses"
+                                            onChange={(statuses) => {
+                                                console.log(statuses)
+                                                setSelectedStatuses(statuses)
+                                            }}
+                                            onBlur={handleStatus}
+                                            value={selectedStatuses}
+                                            optionLabelProp="label"
+                                            className="rounded-none"
+                                            options={filteredStatuses.map(status => ({
+                                                value: status,
+                                                label: status
+                                            }))}
+                                        />
+                                    </div>
+                                    <button className=" border py-2 px-4 rounded text-xs" onClick={handlePdf}>
+                                        {
+                                            isDownloading
+                                                ? <FontAwesomeIcon icon={faSpinner} size="sm" className="animate-spin" />
+                                                : <div className="flex items-center justify-center gap-x-4"><span>Generate PDF</span><FontAwesomeIcon icon={faFilePdf} /></div>
+                                        }
+
+                                    </button>
+                                    <button className="border p-2 px-4 rounded text-xs" onClick={() => toggleCreateNewModal()}>
+                                        <div className="flex items-center justify-center gap-x-4"><span>Create Transaction</span><FontAwesomeIcon icon={faPlus} /></div>
+                                    </button>
+                                    {/* <div className="mb-5 md:mb-0 col-span-4 md:col-start-2 md:col-span-3 md:flex justify-end items-end gap-x-3"> */}
+                                    {/* </div> */}
                                 </div>
                                 {
                                     isViewDetails
@@ -842,52 +1007,64 @@ const Transfer = () => {
                                             </tr>
                                         </thead>
                                         <tbody className="text-sm font-thin text-left">
-                                            {
-                                                !transactions.length
-                                                    ? <tr className="hover:bg-slate-50 border-b border-b-slate-100">
-                                                        <td className="p-2 text-center" colSpan={5}>No Transfers</td>
-                                                    </tr> : null
-                                            }
-                                            {
-                                                transactions.map((transaction: any) => {
-                                                    return (
-                                                        <tr key={transaction.id} className="hover:bg-slate-50 border-b-slate-100 text-left">
-                                                            <td className="py-2 px-2 pr-4 text-left">{new Date(transaction.created * 1000).toLocaleString()}</td>
-                                                            <td className="py-2 px-2 pr-4 text-left">{transaction.id}</td>
-                                                            <td>
-                                                                <span className={`${!transaction.isRejected ? !transaction.isReturned ? !transaction.isCancelled ? !transaction.isOwnershipChanged ? transaction.isNewOwnerAccepted ? 'bg-gray-200' : 'bg-orange-200' : 'bg-green-400 text-white font-bold' : 'bg-red-400 text-white font-bold' : 'bg-red-400 font-bold text-white' : 'bg-red-400 font-bold text-white'} p-1 rounded`}>
-                                                                    {
-                                                                        !transaction.isReturned ? !transaction.isOwnershipChanged ? transaction.isNewOwnerAccepted && transaction.isCurrentOwnerApproved ? "For own" : null : "Done" : 'Returned'
-                                                                    }
-                                                                    {
-                                                                        !transaction.isRejected ? !transaction.isCancelled ? !transaction.isNewOwnerAccepted && !transaction.isCurrentOwnerApproved ? "For Acceptance" : null : 'Cancelled' : 'Rejected'
-                                                                    }
-                                                                    {
-                                                                        transaction.isNewOwnerAccepted && !transaction.isCurrentOwnerApproved ? "For owner approval" : null
-                                                                    }
-                                                                </span>
-                                                            </td>
-                                                            <td className="px-4">
-                                                                <a href="#" className="underline hover:no-underline" onClick={() => toggleViewDtailsModal(transaction.id)}>View details</a>
-                                                                {
-                                                                    !transaction.isRejected ? !transaction.isCancelled && !transaction.isOwnershipChanged
-                                                                        ? <a href="#" className="underline hover:no-underline ml-2" onClick={() => {
-                                                                            setPromptContent({
-                                                                                question: 'Are you sure to cancel this transaction?',
-                                                                                description: "This will prevent you from sending the assets",
-                                                                                buttons: ['Yes', 'No'],
-                                                                                transactionId: transaction.id,
-                                                                                type: 'CANCEL'
-                                                                            })
-                                                                        }}>Cancel</a>
-                                                                        : null : null
-                                                                }
 
-                                                            </td>
-                                                        </tr>
-                                                    )
-                                                })
+                                            {
+                                                !isFetchingTransactions
+                                                    ?
+                                                    <>
+                                                        {
+                                                            !transactions.length
+                                                                ? <tr className="hover:bg-slate-50 border-b border-b-slate-100">
+                                                                    <td className="p-2 text-center" colSpan={5}>No Transfers</td>
+                                                                </tr> : null
+                                                        }
+                                                        {
+                                                            transactions.map((transaction: any) => {
+                                                                return (
+                                                                    <tr key={transaction.id} className="hover:bg-slate-50 border-b-slate-100 text-left">
+                                                                        <td className="py-2 px-2 pr-4 text-left">{new Date(transaction.created * 1000).toLocaleString()}</td>
+                                                                        <td className="py-2 px-2 pr-4 text-left">{transaction.id}</td>
+                                                                        <td>
+                                                                            <span className={`${!transaction.isRejected ? !transaction.isReturned ? !transaction.isCancelled ? !transaction.isOwnershipChanged ? transaction.isNewOwnerAccepted ? 'bg-gray-200' : 'bg-orange-200' : 'bg-green-400 text-white font-bold' : 'bg-red-400 text-white font-bold' : 'bg-red-400 font-bold text-white' : 'bg-red-400 font-bold text-white'} p-1 rounded`}>
+                                                                                {
+                                                                                    !transaction.isReturned ? !transaction.isOwnershipChanged ? transaction.isNewOwnerAccepted && transaction.isCurrentOwnerApproved ? "For own" : null : "Done" : 'Returned'
+                                                                                }
+                                                                                {
+                                                                                    !transaction.isRejected ? !transaction.isCancelled ? !transaction.isNewOwnerAccepted && !transaction.isCurrentOwnerApproved ? "For Acceptance" : null : 'Cancelled' : 'Rejected'
+                                                                                }
+                                                                                {
+                                                                                    transaction.isNewOwnerAccepted && !transaction.isCurrentOwnerApproved ? "For owner approval" : null
+                                                                                }
+                                                                            </span>
+                                                                        </td>
+                                                                        <td className="px-4">
+                                                                            <a href="#" className="underline hover:no-underline" onClick={() => toggleViewDtailsModal(transaction.id)}>View details</a>
+                                                                            {
+                                                                                !transaction.isRejected ? !transaction.isCancelled && !transaction.isOwnershipChanged
+                                                                                    ? <a href="#" className="underline hover:no-underline ml-2" onClick={() => {
+                                                                                        setPromptContent({
+                                                                                            question: 'Are you sure to cancel this transaction?',
+                                                                                            description: "This will prevent you from sending the assets",
+                                                                                            buttons: ['Yes', 'No'],
+                                                                                            transactionId: transaction.id,
+                                                                                            type: 'CANCEL'
+                                                                                        })
+                                                                                    }}>Cancel</a>
+                                                                                    : null : null
+                                                                            }
+
+                                                                        </td>
+                                                                    </tr>
+                                                                )
+                                                            })
+                                                        }
+                                                    </> : <tr>
+                                                        <td colSpan={4} className="text-center py-4">
+                                                            <FontAwesomeIcon icon={faSpinner} className="animate-spin" />
+                                                        </td>
+                                                    </tr>
                                             }
+
                                         </tbody>
                                     </table>
 

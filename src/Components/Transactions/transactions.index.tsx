@@ -9,6 +9,15 @@ import { useNavigate } from "react-router-dom"
 import useChannel from "../../hooks/useChannel"
 import useVerified from "../../hooks/useVerified"
 import AlertIndex from "../Alert/alert.index"
+import { DatePicker, Select, Space } from "antd"
+import moment from "moment"
+import dayjs from "dayjs"
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
+import { faSpinner } from "@fortawesome/free-solid-svg-icons"
+
+const { Option } = Select
+
+const { RangePicker } = DatePicker
 
 interface Logs {
     action: string,
@@ -28,6 +37,10 @@ const Transaction = () => {
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
     const [alertContent, setAlertContent] = useState<{ title?: string, content?: string, type?: string }>({})
+    const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
+    const [isFetching, setIsFetching] = useState(false);
+    const STATUSES = ['CREATE ASSET', 'PUSH ASSET', 'MOVE ASSET', 'SUCCESS UPDATE ASSET', 'SUCCESS REMOVE ASSET', 'INITIATE TRANSACTION', 'REJECT TRANSACTION', 'GET BACK ASSETS', 'RETURN TRANSACTION', 'SUCCESS RETURN ASSET', 'CANCEL TRANSACTION', 'ACCEPT TRANSACTION', 'TRANSFERRED', 'OWNED'];
+    const filteredStatuses = STATUSES.filter((o) => !selectedStatuses.includes(o));
 
 
     const getDateToday = () => {
@@ -55,7 +68,7 @@ const Transaction = () => {
         setEndDate(getDateToday())
     }, []);
 
-    useEffect(() => {
+    const handleTransactionLogs = () => {
         (async () => {
 
             if (channelId.trim()) {
@@ -67,6 +80,7 @@ const Transaction = () => {
                             type: "error"
                         })
                     } else {
+                        setIsFetching(true)
                         const body = {
                             action: Action.LOGS,
                             args: {
@@ -74,7 +88,8 @@ const Transaction = () => {
                                 start: "0",
                                 offset: "100",
                                 startDate,
-                                endDate
+                                endDate,
+                                statuses: selectedStatuses
                             }
                         }
                         const response: HttpResposne = await api("/chaincode", HttpMethod.POST, body);
@@ -82,13 +97,41 @@ const Transaction = () => {
                         console.log(data);
                         if (Array.isArray(data)) setActivities([]);
                         else setActivities(data.logs ? data.logs : []);
+                        setIsFetching(false)
+
                     }
                 }
 
             }
 
         })();
+    }
+
+    useEffect(() => {
+        handleTransactionLogs();
     }, [channelId, startDate, endDate]);
+
+    const handleStatus = () => {
+        handleTransactionLogs();
+    }
+
+    const dateFooter = () => {
+        return <div className="flex gap-x-4 justify-end px-4">
+            <div>
+                <a onClick={() => {
+                    setStartDate(getDateToday())
+                    setEndDate(getDateToday())
+                }}>Today</a>
+            </div>
+            <div>
+                <a onClick={() => {
+                    let yesterday = moment().subtract({ day: 1 }).format("YYYY-MM-DD")
+                    setStartDate(yesterday)
+                    setEndDate(yesterday)
+                }}>Yesterday</a>
+            </div>
+        </div>
+    }
 
     return <>
         {
@@ -119,20 +162,56 @@ const Transaction = () => {
                             <>
                                 <h1 className="text-2xl mb-5">Transactions Logs</h1>
 
-                                <div className="grid grid-cols-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-3 items-center">
                                     <div>
                                         <label className="block text-sm mb-2">Channels</label>
                                         <ChannelIndex handleValue={handleValue} />
                                     </div>
-                                    <div className="col-start-4 flex justify-end items-center">
-                                        <div>
-                                            <label className="block text-sm">Start date</label>
-                                            <input value={startDate} onChange={(e) => setStartDate(e.target.value)} type="date" className="p-1 px-2 outline-none border mr-2 text-sm font-light" />
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm">End date</label>
-                                            <input value={endDate} onChange={(e) => setEndDate(e.target.value)} type="date" className="p-1 px-2 outline-none border mr-2 text-sm font-light" />
-                                        </div>
+                                    {/* <div>
+                                        <label className="block text-sm mb-2">Start date</label>
+                                        <input value={startDate} onChange={(e) => setStartDate(e.target.value)} type="date" className="p-1 px-2 outline-none border mr-2 text-sm font-light w-full" />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm mb-2">End date</label>
+                                        <input value={endDate} onChange={(e) => setEndDate(e.target.value)} type="date" className="p-1 px-2 outline-none border mr-2 text-sm font-light w-full" />
+                                    </div> */}
+                                    <div className="col-span-2">
+                                        <label className="block text-sm mb-2">Select Date</label>
+                                        <RangePicker
+                                            disabledDate={(current) => current && current > moment().endOf('day')}
+                                            value={[
+                                                dayjs(startDate),
+                                                dayjs(endDate)
+                                            ]}
+                                            className="w-full z-0 rounded-none"
+                                            onChange={(_, str) => {
+                                                if (str[0].trim()) {
+                                                    console.log(_, str)
+                                                    setStartDate(str[0]);
+                                                    setEndDate(str[1]);
+                                                }
+                                            }} renderExtraFooter={dateFooter} />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm mb-2">Select Statuses</label>
+                                        <Select
+                                            allowClear
+                                            mode="multiple"
+                                            style={{ width: '100%' }}
+                                            placeholder="Select one or more statuses"
+                                            onChange={(statuses) => {
+                                                console.log(statuses)
+                                                setSelectedStatuses(statuses)
+                                            }}
+                                            onBlur={handleStatus}
+                                            value={selectedStatuses}
+                                            optionLabelProp="label"
+                                            className="rounded-none"
+                                            options={filteredStatuses.map(status => ({
+                                                value: status,
+                                                label: status
+                                            }))}
+                                        />
                                     </div>
                                 </div>
                                 <div className="overflow-x-auto">
@@ -146,27 +225,39 @@ const Transaction = () => {
                                             </tr>
                                         </thead>
                                         <tbody className="text-sm font-thin">
+
                                             {
-                                                !activities.length
-                                                    ? <tr className="hover:bg-slate-50 border-b border-b-slate-100">
-                                                        <td className="p-2 text-center" colSpan={5}>No Transactions</td>
-                                                    </tr> : null
-                                            }
-                                            {
-                                                activities.map(activity => {
-                                                    return <tr key={`${activity.timestamp}-${activity.initiated}`} className="hover:bg-slate-50 border-b-slate-100">
-                                                        {/* <td className="py-2 px-2 pr-4">{activity.initiated}</td> */}
-                                                        <td className="py-2 px-2 pr-4">{new Date(activity.timestamp * 1000).toLocaleString()}</td>
-                                                        <td className="pr-4">
-                                                            <span className="text-xs font-semibold text-white bg-green-400 rounded p-1 cursor-default">
-                                                                {
-                                                                    activity.action
-                                                                }
-                                                            </span>
+                                                !isFetching
+                                                    ?
+                                                    <>
+                                                        {
+                                                            !activities.length
+                                                                ? <tr className="hover:bg-slate-50 border-b border-b-slate-100">
+                                                                    <td className="p-2 text-center" colSpan={5}>No Transactions</td>
+                                                                </tr> : null
+                                                        }
+                                                        {
+                                                            activities.map(activity => {
+                                                                return <tr key={`${activity.timestamp}-${activity.initiated}`} className="hover:bg-slate-50 border-b-slate-100">
+                                                                    {/* <td className="py-2 px-2 pr-4">{activity.initiated}</td> */}
+                                                                    <td className="py-2 px-2 pr-4">{new Date(activity.timestamp * 1000).toLocaleString()}</td>
+                                                                    <td className="pr-4">
+                                                                        <span className="text-xs font-semibold text-white bg-green-400 rounded p-1 cursor-default">
+                                                                            {
+                                                                                activity.action
+                                                                            }
+                                                                        </span>
+                                                                    </td>
+                                                                    <td className="pr-4">{activity.description}</td>
+                                                                </tr>
+                                                            })
+                                                        }
+                                                    </>
+                                                    : <tr>
+                                                        <td colSpan={4} className="text-center py-4">
+                                                            <FontAwesomeIcon icon={faSpinner} className="animate-spin" />
                                                         </td>
-                                                        <td className="pr-4">{activity.description}</td>
                                                     </tr>
-                                                })
                                             }
                                         </tbody>
                                     </table>

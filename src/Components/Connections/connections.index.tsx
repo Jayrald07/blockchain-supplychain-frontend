@@ -141,10 +141,10 @@ const Connection = () => {
 
         if (typeof org.organization_id === "string") {
             organization.id = org.organization_id;
-            organization.connectedOrgName = org.invited_organization_id.organization_name;
+            organization.connectedOrgName = org.invited_organization_id.organization_display_name ? org.invited_organization_id.organization_display_name : org.invited_organization_id.organization_name;
         } else {
             organization.id = org.organization_id._id;
-            organization.connectedOrgName = org.organization_id.organization_name;
+            organization.connectedOrgName = org.organization_id.organization_display_name ? org.organization_id.organization_display_name : org.organization_id.organization_name;
         }
 
         organization.dateConnected = moment(org.dateConnected).format("MMMM D, YYYY");
@@ -231,7 +231,7 @@ const Connection = () => {
                                         {
                                             organizations.map((item: any) => (
                                                 <tr key={item._id} className="hover:bg-slate-50 border-b-slate-100">
-                                                    <td className="p-2">{item.organization_name}</td>
+                                                    <td className="p-2">{item.organization_display_name ? item.organization_display_name : item.organization_name}</td>
                                                     <td>{item.organization_type_id.organization_type_name}</td>
                                                     <td>
                                                         <a onClick={() => {
@@ -270,7 +270,7 @@ const Connection = () => {
                                         {
                                             invitesReceived.map((item: any) => (
                                                 <tr key={item._id} className="hover:bg-slate-50 border-b-slate-100">
-                                                    <td className="p-2">{item.organization_id.organization_name}</td>
+                                                    <td className="p-2">{item.organization_id.organization_display_name ? item.organization_id.organization_display_name : item.organization_id.organization_name}</td>
                                                     <td>{item.organization_id.organization_type_id.organization_type_name}</td>
                                                     <td className="flex gap-x-3 py-2">
 
@@ -325,7 +325,7 @@ const Connection = () => {
                                         {
                                             invitesReceived.map((item: any) => (
                                                 <tr key={item._id} className="hover:bg-slate-50 border-b-slate-100">
-                                                    <td className="p-2">{item.invited_organization_id.organization_name}</td>
+                                                    <td className="p-2">{item.invited_organization_id.organization_display_name ? item.invited_organization_id.organization_display_name : item.invited_organization_id.organization_name}</td>
                                                     <td>{item.invited_organization_id.organization_type_id.organization_type_name}</td>
                                                     <td className="py-2">
                                                         {

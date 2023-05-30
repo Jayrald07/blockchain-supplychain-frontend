@@ -444,7 +444,7 @@ const Account = () => {
                   type="text"
                   value={displayName}
                   handler={(e: any) => setDisplayName(e.target.value)}
-                  description={`This will be displayed on the scanned QR. Otherwise, it will display ${organizationName}`}
+                  description={`This will be displayed on other organization if set. Otherwise, it will display ${organizationName}`}
                 />
                 <InputIndex
                   label="Address"
@@ -521,7 +521,7 @@ const Account = () => {
                           {
                             confirmedOu.map((item: any) => {
                               return <tr key={item._id} className="hover:bg-slate-50 border-b-slate-100">
-                                <td className="p-2">{item.organization_details_id.organization_name}</td>
+                                <td className="p-2">{item.organization_details_id.organization_display_name ? item.organization_details_id.organization_display_name : item.organization_details_id.organization_name}</td>
                                 <td>{item.organization_details_id.organization_type_id.organization_type_name}</td>
                                 <td>
                                   <button className="p-1 px-2 text-xs rounded border mr-2" onClick={() => {
@@ -572,7 +572,7 @@ const Account = () => {
                           {
                             pendingOut.map((item: any) => {
                               return <tr key={item._id} className="hover:bg-slate-50 border-b-slate-100">
-                                <td className="p-2">{item.organization_details_id.organization_name}</td>
+                                <td className="p-2">{item.organization_details_id.organization_display_name ? item.organization_details_id.organization_display_name : item.organization_details_id.organization_name}</td>
                                 <td>{item.organization_details_id.organization_type_id.organization_type_name}</td>
                                 <td>
                                   <button className="p-1 px-2 text-xs rounded border mr-2" onClick={() => {
@@ -614,7 +614,7 @@ const Account = () => {
                           {
                             receivedOu.map((item: any) => {
                               return <tr key={item._id} className="hover:bg-slate-50 border-b-slate-100">
-                                <td className="p-2">{item.organization_id.organization_name}</td>
+                                <td className="p-2">{item.organization_id.organization_display_name ? item.organization_id.organization_display_name : item.organization_id.organization_name}</td>
                                 <td>{item.organization_id.organization_type_id.organization_type_name}</td>
                                 <td>
                                   <button className="p-1 px-2 text-xs rounded border mr-2" onClick={() => {

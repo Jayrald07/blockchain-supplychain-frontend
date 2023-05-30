@@ -81,7 +81,7 @@ export default () => {
   useEffect(() => { }, [isNavOpen]);
 
   return (
-    <div className={`top-0 navbar-container ${isSideOpen ? 'w-full block' : 'w-0'}  h-full fixed sm:relative md:relative overflow-x-hidden sm:w-auto md:w-auto`} onClick={handleBackClick}>
+    <div className={`top-0 navbar-container ${isSideOpen ? 'w-full block' : 'w-0'} z-10  h-full fixed sm:relative md:relative overflow-x-hidden sm:w-auto md:w-auto`} onClick={handleBackClick}>
       <div className={`fixed ${isSideOpen ? 'left-52' : 'rounded rounded-tl-none rounded-bl-none border-l-0'} sm:hidden z-50 bg-white border rounded shadow-md block top-20 text-sm p-2 px-3 cursor-pointer hover:bg-slate-100`} onClick={handleSidebarToggle}>
         <FontAwesomeIcon icon={faBars} size="sm" />
       </div>

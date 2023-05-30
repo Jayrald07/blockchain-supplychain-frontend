@@ -22,7 +22,7 @@ export default ({
   description = ""
 }: InputProps) => {
   return (
-    <section className="mb-4">
+    <section>
       <div className="mb-2">
         <label className="text-sm block">{label}</label>
         <small className="font-light">{description}</small>

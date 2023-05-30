@@ -14,7 +14,8 @@ export default ({
   handleCheck,
   handleRemove,
   handleMove,
-  handleCopy
+  handleCopy,
+  handleHistory
 }: {
   rows: Row[];
   handleView?: any;
@@ -22,7 +23,8 @@ export default ({
   handleRemove?: any;
   handleCheck?: any;
   handleMove?: any;
-  handleCopy?: any
+  handleCopy?: any;
+  handleHistory?: any
 }) => {
   return (
     <section className="w-full overflow-x-auto">
@@ -50,7 +52,7 @@ export default ({
                   handleMove(item.asset_uuid, false, e.target.checked)
                   handleCopy(item.asset_uuid, false, e.target.checked)
                 }} /></td>
-                <td className="py-2 px-2">{item.origin?.organization_name ?? "-"}</td>
+                <td className="py-2 px-2">{(item.origin?.organization_display_name ? item.origin?.organization_display_name : item.origin?.organization_name) ?? "-"}</td>
                 <td>{item.asset_name}</td>
                 <td>
                   <button className="pr-2" onClick={() => handleView(item._id)}>View</button>
@@ -58,6 +60,7 @@ export default ({
                   <button className="pr-2" onClick={() => handleRemove(item._id)}>Remove</button>
                   <button className="pr-2" onClick={() => handleMove(item.asset_uuid, true, true)}>Move</button>
                   <button className="pr-2" onClick={() => handleCopy(item.asset_uuid, true, true)}>Copy</button>
+                  <button className="pr-2" onClick={() => handleHistory(item.asset_uuid, true, true)}>History</button>
                 </td>
               </tr>
             );

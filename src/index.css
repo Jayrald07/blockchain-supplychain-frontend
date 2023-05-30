@@ -62,3 +62,9 @@ html {
 ::-webkit-scrollbar-thumb:hover {
   background: #ddd;
 }
+
+@media (max-width: 576px) {
+  .ant-picker-panels {
+    flex-direction: column !important;
+  }
+}

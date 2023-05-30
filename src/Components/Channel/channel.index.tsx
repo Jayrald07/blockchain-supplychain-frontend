@@ -22,7 +22,7 @@ export default ({ handleValue }: { handleValue: (channel: string) => void }) => 
   }, []);
 
   return <>
-    <div className="mb-4">
+    <div>
 
       <select onChange={e => handleValue(e.target.value)} className="py-2 px-3 text-sm w-full font-light bg-white border-slate-200 border outline-none">
         {

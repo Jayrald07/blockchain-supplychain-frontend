@@ -4,8 +4,11 @@ import InputIndex from "../Input/input.index";
 import "./asset.index.css";
 import {
   faArrowRight,
+  faArrowUp,
   faChevronDown,
   faCopy,
+  faDotCircle,
+  faHouse,
   faPlus,
   faQrcode,
   faSearch,
@@ -37,18 +40,32 @@ const NewAsset = ({
   handleClose,
   assetId,
   action,
-  channelId
+  channelId,
+  assets
 }: {
   handleClose: any;
   assetId: string;
   action: string;
-  channelId: string
+  channelId: string,
+  assets: any
 }) => {
   const [assetName, setAssetName] = useState("");
   const [description, setDescription] = useState("");
   const [inSubmission, setIsSubmission] = useState(false);
   const [tags, setTags] = useState<KeyValue[]>([]);
-  const [selectedTags, setSelectedTags] = useState<KeyValue[]>([]);
+  const [subAssetIds, setSubAssetIds] = useState<string[]>([]);
+  const [type, setType] = useState("");
+  const [selectedTags, setSelectedTags] = useState<KeyValue[]>([
+    {
+      key: 'Price',
+      value: ""
+    },
+    {
+      key: 'Unit',
+      value: ""
+    }
+  ]);
+
 
   const api = axios.create({ baseURL: `${host}:${port}` });
 
@@ -63,7 +80,8 @@ const NewAsset = ({
           tags: selectedTags,
           asset_description: description,
           assetId,
-          channelId
+          channelId,
+          subAssetIds
         }
       }, {
         headers: {
@@ -92,7 +110,8 @@ const NewAsset = ({
             asset_name: assetName,
             tags: selectedTags,
             asset_description: description,
-            channelId
+            channelId,
+            subAssetIds
           }
         },
         {
@@ -132,7 +151,9 @@ const NewAsset = ({
   }
 
   const handleTagsAdd = () => {
-    setSelectedTags([...selectedTags, { key: tags[0].key, value: tags[0].default }])
+    if (tags.length) {
+      setSelectedTags([...selectedTags, { key: tags[0].key, value: tags[0].default }])
+    }
   }
 
   const handleTagDefault = (key: string) => {
@@ -178,6 +199,20 @@ const NewAsset = ({
     })
   }
 
+  const handleSubAsset = (assetId: string) => {
+    setSubAssetIds((prevState: string[]) => {
+      let isExist = prevState.includes(assetId);
+      if (isExist) {
+        console.log(prevState.filter(state => state !== assetId))
+        return prevState.filter(state => state !== assetId)
+      }
+      else {
+        console.log([...prevState, assetId])
+        return [...prevState, assetId]
+      }
+    });
+  }
+
   useEffect(() => {
     handleTags();
     (async () => {
@@ -205,6 +240,7 @@ const NewAsset = ({
             },
           })
         let _tags = validateAndReturn(dataTag).tags
+        console.log(dataTag)
         setSelectedTags(typeof _tags === "object" ? _tags : JSON.parse(_tags));
       } else {
         setAssetName("");
@@ -212,66 +248,121 @@ const NewAsset = ({
       }
 
 
+      let data = await globalApi("/account", HttpMethod.GET);
+      let val = validateAndReturn(data) as any;
+      if (val) {
+        setType(val.organization_type_id.organization_type_name);
+      }
+
     })();
   }, []);
 
   return (<>
     <form onSubmit={handleSubmit}>
-      <InputIndex
-        disabled={action === "view" ? true : false}
-        label="Asset Name"
-        value={assetName}
-        placeholder="Package 1"
-        type="text"
-        handler={(e: any) => {
-          setAssetName(e.target.value);
-        }}
-      />
+      <div className="mb-3">
+        <InputIndex
+          disabled={action === "view" ? true : false}
+          label="Asset Name"
+          value={assetName}
+          placeholder="Package 1"
+          type="text"
+          handler={(e: any) => {
+            setAssetName(e.target.value);
+          }}
+        />
+      </div>
+
+      {
+        action !== "view"
+          ?
+          type.trim() && type.toLocaleLowerCase() === "manufacturer"
+            ? <>
+              <label className="text-sm block mb-3">Sub Assets</label>
+              <div className="mb-3 max-h-24 overflow-y-auto">
+                <table className="w-full border border-slate-100 whitespace-nowrap">
+                  <thead className="bg-slate-100 text-sm text-slate-600 text-left">
+                    <tr>
+                      <th className="p-2"></th>
+                      <th className="p-2">Asset Name</th>
+                    </tr>
+                  </thead>
+                  <tbody className="text-sm font-thin">
+                    {
+                      assets.map((asset: any) => {
+                        if (asset._id !== assetId) {
+                          return <tr className="hover:bg-slate-50 border-b-slate-100">
+                            <td className="py-2 px-2 flex justify-center items-center">
+                              <input type="checkbox" onClick={() => handleSubAsset(asset.asset_uuid)} />
+                            </td>
+                            <td className="py-2 px-2">{asset.asset_name}</td>
+                          </tr>
+                        }
+                      })
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </> : null
+
+
+          : null
+      }
+
       {
         action !== "view" ?
-          <h1 className="text-sm mb-2">Details</h1> : null
+          <h1 className="text-sm mb-2">Metadata</h1> : null
       }
+      <section>
+        <label className="text-xs block mb-2">Price</label>
+        <input disabled={action === "view" ? true : false} required value={selectedTags[0].value} onChange={(e) => handleSelectedTagValue(e.target.value, 0)} className="outline-none block w-full border font-thin text-sm px-3 py-2 mb-2" />
+      </section>
+      <section>
+        <label className="text-xs block mb-2">Unit</label>
+        <input disabled={action === "view" ? true : false} required value={selectedTags[1].value} onChange={(e) => handleSelectedTagValue(e.target.value, 1)} className="outline-none block w-full border font-thin text-sm px-3 py-2 mb-2" />
+      </section>
       {
         selectedTags.map((selectedTag, index) => {
-          return <div key={`${selectedTag.type}-${index}`}>
-            <section className="grid grid-cols-2 pr-2">
+          if (index >= 2) {
+            return <div key={`${selectedTag.type}-${index}`}>
+              <section className="grid grid-cols-2 pr-2">
+                {
+                  action === "view"
+                    ? <label className="text-xs block mb-2">{selectedTag.key}</label>
+                    : <>
+                      <select required key={`${selectedTag.key}-${index}`} onChange={(e) => handleSelectedTagKey(e.target.value, index)} value={selectedTag.key} className="outline-none text-xs bg-white">
+                        {
+                          tags.map((tag: KeyValue, index: number) => {
+                            return <option key={`${selectedTag.key}-${index}`} value={tag.key}>{tag.key}</option>
+                          })
+                        }
+                      </select>
+                      <a href="#" className="justify-self-end" onClick={() => handleSelectedTagDelete(index)}>
+                        <FontAwesomeIcon icon={faTrash} size="xs" className="text-red-300" />
+                      </a>
+                    </>
+                }
+              </section>
               {
-                action === "view"
-                  ? <label className="text-xs block mb-2">{selectedTag.key}</label>
-                  : <>
-                    <select required key={`${selectedTag.key}-${index}`} onChange={(e) => handleSelectedTagKey(e.target.value, index)} value={selectedTag.key} className="outline-none text-xs bg-white">
-                      {
-                        tags.map((tag: KeyValue, index: number) => {
-                          return <option key={`${selectedTag.key}-${index}`} value={tag.key}>{tag.key}</option>
-                        })
-                      }
-                    </select>
-                    <a href="#" className="justify-self-end" onClick={() => handleSelectedTagDelete(index)}>
-                      <FontAwesomeIcon icon={faTrash} size="xs" className="text-red-300" />
-                    </a>
-                  </>
+                handleTagType(selectedTag.key) === "OPTIONS" ?
+                  <select disabled={action === "view" ? true : false} required onChange={(e) => handleSelectedTagValue(e.target.value, index)} value={selectedTag.value ? selectedTag.value : handleTagDefault(selectedTag.key)} className="outline-none block w-full border font-thin text-sm px-3 py-2 bg-white mb-2">
+                    {
+                      handleTagOptions(selectedTag.key).map((value: string) => {
+                        return <option key={`${selectedTag.key}-${index}-${value}`} value={value}>{value}</option>
+                      })
+                    }
+                  </select>
+                  : null
               }
-            </section>
-            {
-              handleTagType(selectedTag.key) === "OPTIONS" ?
-                <select disabled={action === "view" ? true : false} required onChange={(e) => handleSelectedTagValue(e.target.value, index)} value={selectedTag.value ? selectedTag.value : handleTagDefault(selectedTag.key)} className="outline-none block w-full border font-thin text-sm px-3 py-2 bg-white mb-2">
-                  {
-                    handleTagOptions(selectedTag.key).map((value: string) => {
-                      return <option key={`${selectedTag.key}-${index}-${value}`} value={value}>{value}</option>
-                    })
-                  }
-                </select>
-                : null
-            }
-            {
-              handleTagType(selectedTag.key) === "MULTITEXT" ?
-                <textarea disabled={action === "view" ? true : false} required rows={5} onChange={(e) => handleSelectedTagValue(e.target.value, index)} value={selectedTag.value ? selectedTag.value : ''} className="outline-none block w-full border font-thin text-sm px-3 py-2 mb-2" ></textarea> : null
-            }
-            {
-              ["PESO", "NUMBER", "TEXT", "QUANTITY", "DATE"].includes(handleTagType(selectedTag.key)) ?
-                <input disabled={action === "view" ? true : false} required type={handleTagType(selectedTag.key) === "DATE" ? "date" : "text"} onChange={(e) => handleSelectedTagValue(e.target.value, index)} value={selectedTag.value ? selectedTag.value : ''} className="outline-none block w-full border font-thin text-sm px-3 py-2 mb-2" /> : null
-            }
-          </div>
+              {
+                handleTagType(selectedTag.key) === "MULTITEXT" ?
+                  <textarea disabled={action === "view" ? true : false} required rows={5} onChange={(e) => handleSelectedTagValue(e.target.value, index)} value={selectedTag.value ? selectedTag.value : ''} className="outline-none block w-full border font-thin text-sm px-3 py-2 mb-2" ></textarea> : null
+              }
+              {
+                ["PESO", "NUMBER", "TEXT", "QUANTITY", "DATE"].includes(handleTagType(selectedTag.key)) ?
+                  <input disabled={action === "view" ? true : false} required type={handleTagType(selectedTag.key) === "DATE" ? "date" : "text"} onChange={(e) => handleSelectedTagValue(e.target.value, index)} value={selectedTag.value ? selectedTag.value : ''} className="outline-none block w-full border font-thin text-sm px-3 py-2 mb-2" /> : null
+              }
+            </div>
+          }
         })
       }
       {
@@ -301,7 +392,7 @@ const MoveTo = ({ channelId, moveInit, label }: { channelId: string, moveInit: (
     }
   }, [channels]);
 
-  if (!channels.length) return <h1 className="text-center font-light text-xs py-5">No other channels available</h1>
+  if (channels.length <= 1) return <h1 className="text-center font-light text-xs py-5">No other channels available</h1>
 
   return <div>
     <label className="text-sm mb-1 block">{label}:</label>
@@ -330,6 +421,69 @@ const MoveTo = ({ channelId, moveInit, label }: { channelId: string, moveInit: (
 
 }
 
+const HistoryPanel = ({ channelId, orgId, assetId }: { channelId: string, orgId: string, assetId: string }) => {
+
+  const [assetName, setAssetName] = useState("");
+  const [history, setHistory] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    (async () => {
+      const history = await globalApi("/getAssetHistory", HttpMethod.POST, {
+        orgId,
+        channelId,
+        assetId
+      });
+
+      const hist = validateAndReturn(history) as any;
+
+      setAssetName(hist.asset_name);
+      setHistory(hist.history);
+
+      setIsLoading(false)
+    })()
+  }, []);
+
+  return <>
+    {
+      isLoading
+        ? <div className="text-center py-4">
+          <FontAwesomeIcon icon={faSpinner} size="xs" className="animate-spin" />
+        </div>
+        : <div className="py-3">
+          <h1 className="mb-4 font-light"><b>Name: </b>{assetName}</h1>
+          {
+            history.map((item: any, index) => {
+              return <div key={item._id} className="flex gap-x-2 mb-11 relative">
+                {
+                  index !== history.length - 1
+                    ? <span className="w-1 h-28 left-1 top-7 absolute bg-slate-200"></span>
+                    : null
+                }
+                <span>
+                  {
+                    (index !== history.length - 1 && index !== 0)
+                      ? <FontAwesomeIcon icon={faArrowUp} className="text-blue-900" size="xs" />
+                      : <FontAwesomeIcon icon={faDotCircle} className="text-blue-900" size="xs" />
+                  }
+                </span>
+                <div className="justify-start">
+                  <h1 className="text-sm">{item.organization_display_name ? item.organization_display_name : item.organization_name}</h1>
+                  <small className="font-light text-xs block">{new Date(item.timestamp * 1000).toLocaleString()}</small>
+                  <small className="font-light text-xs block"><b>Address: </b>{item.organization_address}</small>
+                  <small className="font-light text-xs block"><b>Phone: </b>{item.organization_phone}</small>
+                  <small className="font-light text-xs p-1 px-2 bg-slate-200 rounded">{item.organization_type_id.organization_type_name}</small>
+                </div>
+              </div>
+            })
+          }
+        </div>
+    }
+
+  </>
+
+}
+
 const Asset = () => {
   const [searchText, setSearchText] = useState("");
   const [assets, setAssets] = useState([]);
@@ -351,6 +505,10 @@ const Asset = () => {
   const [isCopy, setIsCopy] = useState(false);
   const [toMoveAssetIds, setToMoveAssetIds] = useState<string[]>([]);
   const [toCopyAssetIds, setToCopyAssetIds] = useState<string[]>([]);
+  const [isHistory, setIsHistory] = useState(false);
+  const [assetIdHistory, setAssetIdHistory] = useState("");
+  const [orgIdHistory, setOrgIdHistory] = useState("");
+
 
   const api = axios.create({ baseURL: `${host}:${port}` });
 
@@ -608,6 +766,11 @@ const Asset = () => {
     } else setIsCopy(true)
   }
 
+  const handleHistory = (assetId: string) => {
+    setAssetIdHistory(assetId);
+    setIsHistory(true);
+  }
+
   useEffect(() => {
     if (channel.trim()) {
       handleAssets()
@@ -620,7 +783,8 @@ const Asset = () => {
         Authorization: `Bearer ${localStorage.getItem("token")}`
       }
     }).then(({ data }) => {
-      setOrgType(data.organization_type_id.organization_type_name)
+      setOrgType(data.organization_type_id.organization_type_name.toLowerCase())
+      setOrgIdHistory(data._id)
     })
 
   }, [isModal, isAlert]);
@@ -651,6 +815,11 @@ const Asset = () => {
           : null
       }
       {
+        isHistory
+          ? <RmodalIndex title="Asset History" Component={<HistoryPanel orgId={orgIdHistory} channelId={channel} assetId={assetIdHistory} />} onClose={() => setIsHistory(false)} />
+          : null
+      }
+      {
         isMove
           ? <RmodalIndex title="Move Asset" Component={<MoveTo label="Move to" moveInit={handleMoveInit} channelId={channel} />} onClose={() => setIsMove(false)} />
           : null
@@ -671,7 +840,7 @@ const Asset = () => {
                 ?
                 <>
                   <h1 className="text-2xl mb-5">Manage Assets</h1>
-                  <section className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-4 items-end gap-x-4">
+                  <section className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-4 items-end gap-4 mb-3">
                     <InputIndex
                       icon={<FontAwesomeIcon icon={faSearch} />}
                       label="Search Asset"
@@ -684,34 +853,41 @@ const Asset = () => {
                       <label className="text-sm mb-2 block">Channels</label>
                       <ChannelIndex handleValue={(value) => setChannel(value)} />
                     </section>
-                    <button
-                      className="border rounded py-2 px-3.5 hover:bg-gray-100 text-xs mb-4"
-                      onClick={generateQrs}
-                    >
-                      {
-                        !generating
-                          ? <><span>Generate QR Codes</span> <FontAwesomeIcon icon={faQrcode} /></>
-                          : <FontAwesomeIcon icon={faSpinner} className="animate-spin" />
-                      }
+                    {
+                      orgType === "retailer"
+                        ? <button
+                          className="border rounded py-2 px-3.5 hover:bg-gray-100 text-xs"
+                          onClick={generateQrs}
+                        >
+                          {
+                            !generating
+                              ? <><span>Generate QR Codes</span> <FontAwesomeIcon icon={faQrcode} /></>
+                              : <FontAwesomeIcon icon={faSpinner} className="animate-spin" />
+                          }
+                        </button> : null
+                    }
+                    {
+                      orgType === "supplier" || orgType === "manufacturer"
+                        ? <button
+                          className="border rounded py-2 px-3.5 hover:bg-gray-100 text-xs"
+                          onClick={() => {
+                            setAction("");
+                            setIsModal(true);
+                          }}
+                        >
+                          <span>Create New Asset</span> <FontAwesomeIcon icon={faPlus} />
+                        </button>
+                        : null
+                    }
 
-                    </button>
                     <button
-                      className="border rounded py-2 px-3.5 hover:bg-gray-100 text-xs mb-4"
-                      onClick={() => {
-                        setAction("");
-                        setIsModal(true);
-                      }}
-                    >
-                      <span>Create New Asset</span> <FontAwesomeIcon icon={faPlus} />
-                    </button>
-                    <button
-                      className="border rounded py-2 px-3.5 hover:bg-gray-100 text-xs mb-4"
+                      className="border rounded py-2 px-3.5 hover:bg-gray-100 text-xs"
                       onClick={handleMultiMove}
                     >
                       <span className="pr-2">Move</span> <FontAwesomeIcon icon={faArrowRight} />
                     </button>
                     <button
-                      className="border rounded py-2 px-3.5 hover:bg-gray-100 text-xs mb-4"
+                      className="border rounded py-2 px-3.5 hover:bg-gray-100 text-xs"
                       onClick={handleMultiCopy}
                     >
                       <span className="pr-2">Copy</span> <FontAwesomeIcon icon={faCopy} />
@@ -725,6 +901,7 @@ const Asset = () => {
                     handleCheck={handleCheck}
                     handleMove={handleMove}
                     handleCopy={handleCopy}
+                    handleHistory={handleHistory}
                   />
                 </>
                 :
@@ -747,6 +924,7 @@ const Asset = () => {
             action={action}
             channelId={channel}
             Component={NewAsset}
+            assets={assets}
             handleClose={(response: string) => {
               setSelectedAssetId("");
               setIsModal(false);

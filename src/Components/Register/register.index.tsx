@@ -77,22 +77,15 @@ const NodeByUser = ({ back }: any) => {
     </>,
     <div className="w-80">
       <small className="font-light text-xs block mb-3">
-        Kindly input your node's IP Address and port. The system will check if
+        Kindly input your server's URL or hostname. The system will check if
         there is connection.
       </small>
       <Input
-        label="IP Address"
+        label="URL or Domain Name"
         type="text"
-        placeholder="Ex. 192.168.1.1"
+        placeholder="Ex. supplier.com"
         handler={(e: any) => setIp(e.target.value)}
         value={ip}
-      />
-      <Input
-        label="Port"
-        type="Port"
-        placeholder="Ex. 8012"
-        handler={(e: any) => setPort(e.target.value)}
-        value={port}
       />
     </div>,
     <div className="w-80 mt-4 text-sm font-light mb-6">
@@ -136,7 +129,7 @@ const NodeByUser = ({ back }: any) => {
     try {
       const { data } = await api.post(`/createConnection`, {
         ip,
-        port,
+        port: "8012",
         organization_id: orgId,
       });
       if (data.message === "Done") {

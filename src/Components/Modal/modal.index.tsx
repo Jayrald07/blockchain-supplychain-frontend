@@ -8,13 +8,15 @@ export default ({
   handleClose,
   assetId,
   action,
-  channelId
+  channelId,
+  assets
 }: {
   Component: any;
   handleClose: any;
   assetId: string;
   action: string;
-  channelId: string
+  channelId: string;
+  assets: any
 }) => {
   return (
     <section
@@ -46,6 +48,7 @@ export default ({
             assetId={assetId}
             action={action}
             channelId={channelId}
+            assets={assets}
           />
         </div>
         <div className="bsc-modal-footer"></div>

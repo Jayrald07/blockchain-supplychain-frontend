@@ -22,7 +22,8 @@ export enum Action {
     REJECT = 'REJECT',
     PDF_TRANSACTIONS = 'PDF_TRANSACTIONS',
     MOVE = 'MOVE',
-    COPY = 'COPY'
+    COPY = 'COPY',
+    WEEK = 'WEEKLY'
 }
 
 export interface HttpResposne {
