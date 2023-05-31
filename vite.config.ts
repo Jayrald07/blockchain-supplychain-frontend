@@ -15,8 +15,8 @@ export default defineConfig({
   plugins: [react()],
   server: {
     https: {
-      key: 'privkey.pem',
-      cert: 'fullchain.pem',
+      key: '/etc/chaindirect/privkey.pem',
+      cert: '/etc/chaindirect/fullchain.pem',
     },
     port: 443,
     host: true

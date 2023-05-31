@@ -19,6 +19,8 @@ import TransactionsIndex from "./Components/Transactions/transactions.index";
 import SettingsIndex from "./Components/Settings/settings.index";
 import EmailverificationIndex from "./Components/EmailVerification/emailverification.index";
 import NotificationsIndex from "./Components/Notifications/notifications.index";
+import ClientauthIndex from "./Components/ClientAuth/clientauth.index";
+import ClientsettingsIndex from "./Components/ClientSettings/clientsettings.index";
 
 const Redire = () => {
   useEffect(() => {
@@ -62,7 +64,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/login",
-    element: <Login />,
+    element: <ClientauthIndex><Login /></ClientauthIndex>,
   },
   {
     path: "/navbar",
@@ -120,6 +122,10 @@ const router = createBrowserRouter([
   {
     path: "/notifications",
     element: <NotificationsIndex />
+  },
+  {
+    path: "/client-settings",
+    element: <ClientsettingsIndex />
   }
 
 ]);
