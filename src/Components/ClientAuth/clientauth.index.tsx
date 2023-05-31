@@ -11,7 +11,7 @@ const api = axios.create({
 });
 
 const apiClient = axios.create({
-  baseURL: `${location.origin}:8443`,
+  baseURL: `${location.origin}:${import.meta.env.VITE_CLIENT_PORT}`,
 });
 
 export default ({ children }: { children: ReactNode }) => {

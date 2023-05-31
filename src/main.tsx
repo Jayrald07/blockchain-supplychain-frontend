@@ -21,6 +21,7 @@ import EmailverificationIndex from "./Components/EmailVerification/emailverifica
 import NotificationsIndex from "./Components/Notifications/notifications.index";
 import ClientauthIndex from "./Components/ClientAuth/clientauth.index";
 import ClientsettingsIndex from "./Components/ClientSettings/clientsettings.index";
+import GlobaltransactionIndex from "./Components/GlobalTransaction/globaltransaction.index";
 
 const Redire = () => {
   useEffect(() => {
@@ -126,6 +127,11 @@ const router = createBrowserRouter([
   {
     path: "/client-settings",
     element: <ClientsettingsIndex />
+  }
+  ,
+  {
+    path: "/global-transactions",
+    element: <GlobaltransactionIndex />
   }
 
 ]);

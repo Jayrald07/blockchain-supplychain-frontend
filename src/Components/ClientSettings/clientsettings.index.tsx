@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import InputIndex from "../Input/input.index";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faChevronLeft, faKey, faSignOut, faSpinner, faUser } from "@fortawesome/free-solid-svg-icons";
+import { faChevronLeft, faKey, faRedoAlt, faSignOut, faSpinner, faUser } from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
 import AlertIndex from "../Alert/alert.index";
 
@@ -10,7 +10,7 @@ const api = axios.create({
 });
 
 const apiClient = axios.create({
-  baseURL: `${location.origin}:8443`,
+  baseURL: `${location.origin}:${import.meta.env.VITE_CLIENT_PORT}`,
 });
 
 const SignInClient = () => {
@@ -213,6 +213,24 @@ export default () => {
     location.reload();
   }
 
+  const handleRestartServer = async () => {
+    let { data } = await apiClient.get("/restartServer");
+
+    if (data.message === "Done") {
+      setAlertContent({
+        type: "success",
+        title: "Server restarted successfully",
+        description: data.details
+      })
+    } else {
+      setAlertContent({
+        type: "error",
+        title: "Restarting server failed",
+        description: data.details
+      })
+    }
+  }
+
   useEffect(() => {
 
     const token = localStorage.getItem("client_token");
@@ -235,8 +253,11 @@ export default () => {
     {
       status === "valid"
         ? <>
-          <div className="bg-slate-50 border rounded-sm shadow-md flex w-full mb-4 items-center p-3 px-4">
+          <div className="bg-slate-50 border rounded-sm shadow-md flex w-full mb-4 items-center p-3 px-4 gap-x-3">
             <h1 className="text-lg w-full">Client Settings</h1>
+            {/* <button onClick={handleRestartServer} title="restart server" >
+              <FontAwesomeIcon icon={faRedoAlt} />
+            </button> */}
             <button onClick={handleSignOut}>
               <FontAwesomeIcon icon={faSignOut} />
             </button>

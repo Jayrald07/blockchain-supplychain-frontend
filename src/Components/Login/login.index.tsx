@@ -40,8 +40,8 @@ export default () => {
         }
         <div className="flex justify-end bg-slate-100 gap-x-3 p-3 text-xs absolute w-full items-center">
           {/* <span className="font-light"><b>Access Code:</b> ac9505fb-00b2-4b96-b089-d2b71ee43440</span> */}
-          <a className="border rounded-sm py-2 px-3 bg-white" href="#">
-            <FontAwesomeIcon icon={faList} className="pr-1" /> <span>Transactions</span></a>
+          {/* <a className="border rounded-sm py-2 px-3 bg-white" href="/global-transactions"> */}
+          {/* <FontAwesomeIcon icon={faList} className="pr-1" /> <span>Transactions</span></a> */}
           <a className="border rounded-sm py-2 px-3 bg-white" href="/client-settings">
             <FontAwesomeIcon icon={faGear} className="pr-1" /> <span>Settings</span>
           </a>

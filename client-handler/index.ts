@@ -1,3 +1,4 @@
+import { exec } from "child_process";
 import express, { Response } from "express";
 import { createServer } from "https";
 import dotenv from "dotenv";
@@ -6,6 +7,7 @@ import sql3 from "sqlite3";
 import DB_Config from "./src/utils/db";
 import cors from "cors";
 import multer from "multer";
+import path from "path";
 
 
 
@@ -15,7 +17,7 @@ const upload = multer({ storage: multer.memoryStorage() })
 
 const app = express();
 
-// app.use(express.static("public"));
+app.use(express.static("public"));
 
 app.use(cors({
   origin: "*"
@@ -171,6 +173,32 @@ app.get("/getSslStatus", async (req: any, res: Response) => {
   }
 
 });
+
+app.get("/restartServer", (req: any, res: Response) => {
+
+  try {
+
+    exec('/bin/bash docker restart client', (error, stdout, stderror) => {
+      try {
+        if (error) return res.send({ message: "Error", details: stderror, status: "error" });
+
+        res.send({ message: "Done", details: stdout });
+      } catch (error: Error | any) {
+        res.status(500).send({ message: error.message })
+      }
+    })
+
+  } catch (error: any) {
+
+    res.send({ message: "Error", details: error.message })
+
+  }
+
+})
+
+app.get("*", (req: any, res: Response) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+})
 
 httpServer.listen(8443, () => {
   console.log("Listening on port 1234");
