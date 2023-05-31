@@ -109,7 +109,7 @@ export default ({ children }: { children: ReactNode }) => {
                   : null
               }
               <h1 className="mb-1">Initial Setup</h1>
-              <small className="mb-3 block font-light">The following credential will be used when accessing the transactions and settings page. Make sure to provide a secure password.</small>
+              <small className="mb-3 block font-light">The following credential will be used when accessing the settings page. Make sure to provide a secure password.</small>
               <form onSubmit={handleSetup}>
                 <InputIndex placeholder="juandelacruz07" label="Username" type="text" handler={(e: any) => setUsername(e.target.value)} value={username} />
                 <div className="mb-2"></div>
