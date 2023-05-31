@@ -200,8 +200,8 @@ app.get("*", (req: any, res: Response) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 })
 
-httpServer.listen(8443, () => {
-  console.log("Listening on port 1234");
+httpServer.listen(process.env.PORT || 443, () => {
+  console.log(`Listening on port ${process.env.PORT}`);
 })
 
 
